@@ -26,7 +26,7 @@ const CheckoutPage = () => {
     city: "",
     state: "",
     zipCode: "",
-    country: "USA",
+    country: "Indonesia",
     paymentMethod: "credit-card",
     cardNumber: "",
     cardHolder: "",
@@ -200,10 +200,10 @@ const CheckoutPage = () => {
                       className="w-full border border-gray-300 rounded px-3 py-2"
                       required
                     >
+                      <option value="Indonesia">Indonesia</option>
                       <option value="USA">United States</option>
-                      <option value="CAN">Canada</option>
-                      <option value="UK">United Kingdom</option>
-                      <option value="AUS">Australia</option>
+                      <option value="Singapore">Singapore</option>
+                      <option value="Malaysia">Malaysia</option>
                     </select>
                   </div>
                 </div>
@@ -240,14 +240,16 @@ const CheckoutPage = () => {
                     <div className="flex items-center">
                       <input
                         type="radio"
-                        id="paypal"
+                        id="midtrans"
                         name="paymentMethod"
-                        value="paypal"
-                        checked={formData.paymentMethod === "paypal"}
+                        value="midtrans"
+                        checked={formData.paymentMethod === "midtrans"}
                         onChange={handleChange}
                         className="mr-2"
                       />
-                      <label htmlFor="paypal">PayPal</label>
+                      <label htmlFor="midtrans" className="flex items-center">
+                        Midtrans Payment (Bank Transfer, E-Wallet)
+                      </label>
                     </div>
                   </div>
 
@@ -316,13 +318,23 @@ const CheckoutPage = () => {
                     </div>
                   )}
 
-                  {/* PayPal Instructions */}
-                  {formData.paymentMethod === "paypal" && (
+                  {/* Midtrans Instructions */}
+                  {formData.paymentMethod === "midtrans" && (
                     <div className="border-t pt-4 mt-4">
-                      <p className="text-gray-600">
-                        You will be redirected to PayPal to complete your
-                        payment.
-                      </p>
+                      <div className="bg-blue-50 p-4 rounded">
+                        <h3 className="font-medium text-blue-800 mb-2">Midtrans Payment Information</h3>
+                        <p className="text-sm text-blue-700 mb-2">
+                          After placing your order, you will be redirected to Midtrans to complete your payment.
+                        </p>
+                        <p className="text-sm text-blue-700">
+                          Available payment methods include:
+                        </p>
+                        <ul className="list-disc list-inside text-sm text-blue-700 ml-2 mt-1">
+                          <li>Bank Transfer (BCA, Mandiri, BNI, BRI)</li>
+                          <li>E-Wallets (GoPay, OVO, DANA, LinkAja)</li>
+                          <li>Convenience Stores (Indomaret, Alfamart)</li>
+                        </ul>
+                      </div>
                     </div>
                   )}
                 </div>

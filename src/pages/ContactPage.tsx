@@ -13,25 +13,59 @@ const ContactPage = () => {
     subject: "",
     message: "",
   });
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
+    // Clear error when field is edited
+    if (errors[name]) {
+      setErrors((prev) => ({ ...prev, [name]: "" }));
+    }
+  };
+
+  const validate = () => {
+    const newErrors: Record<string, string> = {};
+    
+    if (!formData.name.trim()) {
+      newErrors.name = "Name is required";
+    }
+    
+    if (!formData.email.trim()) {
+      newErrors.email = "Email is required";
+    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+      newErrors.email = "Email address is invalid";
+    }
+    
+    if (!formData.subject.trim()) {
+      newErrors.subject = "Subject is required";
+    }
+    
+    if (!formData.message.trim()) {
+      newErrors.message = "Message is required";
+    } else if (formData.message.trim().length < 10) {
+      newErrors.message = "Message must be at least 10 characters";
+    }
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!validate()) {
+      return;
+    }
+    
     setIsSubmitting(true);
     
     // Simulate form submission
     setTimeout(() => {
-      toast.success("Your message has been sent. We'll get back to you soon!");
+      toast.success("Your message has been sent! We'll get back to you soon.");
       setFormData({
         name: "",
         email: "",
@@ -45,42 +79,87 @@ const ContactPage = () => {
   return (
     <MainLayout>
       <div className="container mx-auto px-4 py-12">
-        {/* Header */}
-        <div className="text-center mb-12">
-          <h1 className="text-3xl md:text-4xl font-bold mb-4">Contact Us</h1>
-          <p className="text-gray-600 max-w-2xl mx-auto">
-            Have questions, feedback, or need assistance with your order? We're here to help! Fill out the form below or reach out to us directly using the contact information provided.
-          </p>
-        </div>
+        <h1 className="text-3xl font-bold text-center mb-12">Contact Us</h1>
 
-        <div className="flex flex-col lg:flex-row gap-12">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+          {/* Contact Info */}
+          <div>
+            <h2 className="text-xl font-semibold mb-6">Get in Touch</h2>
+            <p className="text-gray-600 mb-8">
+              Have questions about our products or services? We're here to help and
+              would love to hear from you. Please feel free to get in touch with us.
+            </p>
+
+            <div className="space-y-6">
+              <div>
+                <h3 className="font-medium mb-1">Address</h3>
+                <p className="text-gray-600">
+                  123 Beauty Street, Suite 500 <br />
+                  Jakarta, 12345, Indonesia
+                </p>
+              </div>
+
+              <div>
+                <h3 className="font-medium mb-1">Phone</h3>
+                <p className="text-gray-600">+62 123 456 7890</p>
+              </div>
+
+              <div>
+                <h3 className="font-medium mb-1">Email</h3>
+                <p className="text-gray-600">info@umibeauty.com</p>
+              </div>
+
+              <div>
+                <h3 className="font-medium mb-1">Business Hours</h3>
+                <p className="text-gray-600">
+                  Monday-Friday: 9:00 AM - 6:00 PM <br />
+                  Saturday: 10:00 AM - 4:00 PM <br />
+                  Sunday: Closed
+                </p>
+              </div>
+            </div>
+
+            {/* Google Map */}
+            <div className="mt-8">
+              <h3 className="font-medium mb-4">Find Us</h3>
+              <div className="rounded-lg overflow-hidden h-64 w-full">
+                <iframe
+                  title="UMI Beauty Store Location"
+                  className="w-full h-full border-0"
+                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d253840.65295081204!2d106.6894308752034!3d-6.229386528297428!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e69f3e945e34b9d%3A0x5371bf0fdad786a2!2sJakarta%2C%20Indonesia!5e0!3m2!1sen!2sus!4v1673486857579!5m2!1sen!2sus"
+                  loading="lazy"
+                  referrerPolicy="no-referrer-when-downgrade"
+                ></iframe>
+              </div>
+            </div>
+          </div>
+
           {/* Contact Form */}
-          <div className="lg:w-2/3">
-            <div className="bg-white rounded-lg shadow-sm p-6 md:p-8">
-              <h2 className="text-2xl font-bold mb-6">Send Us a Message</h2>
+          <div>
+            <div className="bg-white rounded-lg shadow-sm p-6">
+              <h2 className="text-xl font-semibold mb-6">Send Us a Message</h2>
+
               <form onSubmit={handleSubmit}>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <div className="space-y-4">
                   <div>
-                    <label
-                      htmlFor="name"
-                      className="block text-sm font-medium mb-2"
-                    >
-                      Your Name *
+                    <label htmlFor="name" className="block text-sm font-medium mb-1">
+                      Your Name <span className="text-red-500">*</span>
                     </label>
                     <Input
                       id="name"
                       name="name"
                       value={formData.name}
                       onChange={handleChange}
-                      required
+                      className={errors.name ? "border-red-400" : ""}
                     />
+                    {errors.name && (
+                      <p className="text-sm text-red-500 mt-1">{errors.name}</p>
+                    )}
                   </div>
+
                   <div>
-                    <label
-                      htmlFor="email"
-                      className="block text-sm font-medium mb-2"
-                    >
-                      Your Email *
+                    <label htmlFor="email" className="block text-sm font-medium mb-1">
+                      Your Email <span className="text-red-500">*</span>
                     </label>
                     <Input
                       id="email"
@@ -88,199 +167,56 @@ const ContactPage = () => {
                       type="email"
                       value={formData.email}
                       onChange={handleChange}
-                      required
+                      className={errors.email ? "border-red-400" : ""}
                     />
+                    {errors.email && (
+                      <p className="text-sm text-red-500 mt-1">{errors.email}</p>
+                    )}
                   </div>
-                </div>
-                <div className="mb-6">
-                  <label
-                    htmlFor="subject"
-                    className="block text-sm font-medium mb-2"
+
+                  <div>
+                    <label htmlFor="subject" className="block text-sm font-medium mb-1">
+                      Subject <span className="text-red-500">*</span>
+                    </label>
+                    <Input
+                      id="subject"
+                      name="subject"
+                      value={formData.subject}
+                      onChange={handleChange}
+                      className={errors.subject ? "border-red-400" : ""}
+                    />
+                    {errors.subject && (
+                      <p className="text-sm text-red-500 mt-1">{errors.subject}</p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label htmlFor="message" className="block text-sm font-medium mb-1">
+                      Message <span className="text-red-500">*</span>
+                    </label>
+                    <Textarea
+                      id="message"
+                      name="message"
+                      value={formData.message}
+                      onChange={handleChange}
+                      rows={5}
+                      className={errors.message ? "border-red-400" : ""}
+                    />
+                    {errors.message && (
+                      <p className="text-sm text-red-500 mt-1">{errors.message}</p>
+                    )}
+                  </div>
+
+                  <Button
+                    type="submit"
+                    className="w-full bg-umi-orange hover:bg-orange-700"
+                    disabled={isSubmitting}
                   >
-                    Subject *
-                  </label>
-                  <Input
-                    id="subject"
-                    name="subject"
-                    value={formData.subject}
-                    onChange={handleChange}
-                    required
-                  />
+                    {isSubmitting ? "Sending..." : "Send Message"}
+                  </Button>
                 </div>
-                <div className="mb-6">
-                  <label
-                    htmlFor="message"
-                    className="block text-sm font-medium mb-2"
-                  >
-                    Message *
-                  </label>
-                  <Textarea
-                    id="message"
-                    name="message"
-                    rows={6}
-                    value={formData.message}
-                    onChange={handleChange}
-                    className="resize-none"
-                    required
-                  />
-                </div>
-                <Button
-                  type="submit"
-                  className="bg-umi-orange hover:bg-orange-700"
-                  disabled={isSubmitting}
-                >
-                  {isSubmitting ? "Sending..." : "Send Message"}
-                </Button>
               </form>
             </div>
-          </div>
-
-          {/* Contact Information */}
-          <div className="lg:w-1/3">
-            <div className="bg-white rounded-lg shadow-sm p-6 md:p-8 mb-6">
-              <h3 className="text-xl font-semibold mb-4">Contact Information</h3>
-              <div className="space-y-4">
-                <div className="flex">
-                  <div className="flex-shrink-0 w-10 h-10 rounded-full bg-umi-orange/10 flex items-center justify-center text-umi-orange mr-3">
-                    <svg
-                      className="w-5 h-5"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
-                      ></path>
-                    </svg>
-                  </div>
-                  <div>
-                    <p className="font-medium">Phone</p>
-                    <p className="text-gray-600">+1 (555) 123-4567</p>
-                  </div>
-                </div>
-                <div className="flex">
-                  <div className="flex-shrink-0 w-10 h-10 rounded-full bg-umi-orange/10 flex items-center justify-center text-umi-orange mr-3">
-                    <svg
-                      className="w-5 h-5"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-                      ></path>
-                    </svg>
-                  </div>
-                  <div>
-                    <p className="font-medium">Email</p>
-                    <p className="text-gray-600">support@umibeauty.com</p>
-                  </div>
-                </div>
-                <div className="flex">
-                  <div className="flex-shrink-0 w-10 h-10 rounded-full bg-umi-orange/10 flex items-center justify-center text-umi-orange mr-3">
-                    <svg
-                      className="w-5 h-5"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-                      ></path>
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-                      ></path>
-                    </svg>
-                  </div>
-                  <div>
-                    <p className="font-medium">Address</p>
-                    <p className="text-gray-600">
-                      123 Beauty Lane,
-                      <br />
-                      Los Angeles, CA 90001
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-white rounded-lg shadow-sm p-6 md:p-8">
-              <h3 className="text-xl font-semibold mb-4">Business Hours</h3>
-              <ul className="space-y-3">
-                <li className="flex justify-between">
-                  <span className="text-gray-600">Monday - Friday:</span>
-                  <span>9:00 AM - 6:00 PM</span>
-                </li>
-                <li className="flex justify-between">
-                  <span className="text-gray-600">Saturday:</span>
-                  <span>10:00 AM - 4:00 PM</span>
-                </li>
-                <li className="flex justify-between">
-                  <span className="text-gray-600">Sunday:</span>
-                  <span>Closed</span>
-                </li>
-              </ul>
-            </div>
-          </div>
-        </div>
-
-        {/* Map */}
-        <div className="mt-12">
-          <h2 className="text-2xl font-bold mb-6">Find Us</h2>
-          <div className="bg-gray-200 rounded-lg h-96 overflow-hidden">
-            {/* Placeholder for a map */}
-            <div className="h-full w-full flex items-center justify-center bg-gray-300">
-              <p className="text-gray-600">Map would be displayed here</p>
-            </div>
-          </div>
-        </div>
-
-        {/* FAQ section */}
-        <div className="mt-12">
-          <h2 className="text-2xl font-bold mb-6">Frequently Asked Questions</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {[
-              {
-                question: "How long does shipping take?",
-                answer:
-                  "Standard shipping typically takes 3-5 business days within the continental US. Express shipping options are available at checkout for faster delivery."
-              },
-              {
-                question: "What is your return policy?",
-                answer:
-                  "We offer a 30-day return policy for unused items in their original packaging. Please contact our customer service team to initiate a return."
-              },
-              {
-                question: "Are your products cruelty-free?",
-                answer:
-                  "Yes, all UMI Beauty products are 100% cruelty-free. We do not test on animals at any stage of product development."
-              },
-              {
-                question: "Do you ship internationally?",
-                answer:
-                  "Yes, we ship to most countries worldwide. International shipping rates and delivery times vary by location."
-              }
-            ].map((faq, index) => (
-              <div key={index} className="bg-white p-6 rounded-lg shadow-sm">
-                <h3 className="font-semibold text-lg mb-2">{faq.question}</h3>
-                <p className="text-gray-600">{faq.answer}</p>
-              </div>
-            ))}
           </div>
         </div>
       </div>

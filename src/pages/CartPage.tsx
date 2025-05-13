@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import MainLayout from "@/components/layouts/MainLayout";
 import { Button } from "@/components/ui/button";
@@ -12,8 +12,14 @@ const CartPage = () => {
   const { items, removeItem, updateQuantity, clearCart, totalPrice, applyDiscount, discountAmount } = useCart();
   const navigate = useNavigate();
   const [couponCode, setCouponCode] = useState("");
+  const [subtotal, setSubtotal] = useState(0);
+  
+  useEffect(() => {
+    // Calculate subtotal whenever items change
+    const newSubtotal = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    setSubtotal(newSubtotal);
+  }, [items]);
 
-  const subtotal = totalPrice + discountAmount;
   const shipping = items.length > 0 ? 10 : 0;
   const total = totalPrice + shipping;
 
@@ -37,6 +43,17 @@ const CartPage = () => {
     } else {
       navigate("/checkout");
     }
+  };
+  
+  const handleQuantityChange = (id: string, newQuantity: number) => {
+    if (newQuantity >= 1) {
+      updateQuantity(id, newQuantity);
+    }
+  };
+  
+  const handleRemoveItem = (id: string, name: string) => {
+    removeItem(id);
+    toast.success(`${name} removed from cart`);
   };
 
   return (
@@ -113,7 +130,7 @@ const CartPage = () => {
                       <span className="md:hidden font-medium mr-2">Quantity:</span>
                       <div className="flex items-center">
                         <button
-                          onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                          onClick={() => handleQuantityChange(item.id, item.quantity - 1)}
                           className="text-gray-500 hover:text-umi-orange p-1"
                           disabled={item.quantity <= 1}
                         >
@@ -121,7 +138,7 @@ const CartPage = () => {
                         </button>
                         <span className="w-10 text-center">{item.quantity}</span>
                         <button
-                          onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                          onClick={() => handleQuantityChange(item.id, item.quantity + 1)}
                           className="text-gray-500 hover:text-umi-orange p-1"
                         >
                           <Plus size={16} />
@@ -136,7 +153,7 @@ const CartPage = () => {
                         ${(item.price * item.quantity).toFixed(2)}
                       </span>
                       <button
-                        onClick={() => removeItem(item.id)}
+                        onClick={() => handleRemoveItem(item.id, item.name)}
                         className="text-gray-400 hover:text-red-500 ml-4"
                       >
                         <Trash2 size={18} />

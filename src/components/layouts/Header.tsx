@@ -1,9 +1,9 @@
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ShoppingCart, User, Menu, X, Search } from "lucide-react";
+import { ShoppingCart, User, Menu, X, Search, ChevronDown, LogOut } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCart } from "@/contexts/CartContext";
 import { categories } from "@/data/mockData";
@@ -13,20 +13,47 @@ const Header = () => {
   const { totalItems } = useCart();
   const navigate = useNavigate();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
+  const moreMenuRef = useRef<HTMLDivElement>(null);
+  const profileMenuRef = useRef<HTMLDivElement>(null);
+
+  // Handle clicks outside of dropdown menus
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (moreMenuRef.current && !moreMenuRef.current.contains(event.target as Node)) {
+        setIsMoreMenuOpen(false);
+      }
+      if (profileMenuRef.current && !profileMenuRef.current.contains(event.target as Node)) {
+        setIsProfileOpen(false);
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
       navigate(`/products?search=${encodeURIComponent(searchQuery)}`);
       setSearchQuery("");
+      setIsMobileMenuOpen(false);
     }
   };
 
   const handleLogout = () => {
     logout();
     navigate("/");
+    setIsProfileOpen(false);
   };
+
+  // Split categories for main nav and More dropdown
+  const mainCategories = categories.slice(0, 4);
+  const moreCategories = categories.slice(4);
 
   return (
     <header className="bg-white shadow-sm sticky top-0 z-50">
@@ -68,31 +95,54 @@ const Header = () => {
 
             {/* User account */}
             {isAuthenticated ? (
-              <div className="relative group">
-                <button className="flex items-center space-x-1">
+              <div ref={profileMenuRef} className="relative">
+                <button 
+                  className="flex items-center space-x-1"
+                  onClick={() => setIsProfileOpen(!isProfileOpen)}
+                >
                   <User className="h-6 w-6 text-umi-black hover:text-umi-orange transition-colors" />
+                  <ChevronDown className="h-4 w-4" />
                 </button>
-                <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg overflow-hidden z-20 hidden group-hover:block">
-                  <div className="py-2">
-                    <p className="px-4 py-2 text-sm font-medium text-umi-black truncate">
-                      {user?.name}
-                    </p>
-                    {user?.isAdmin && (
+                
+                {isProfileOpen && (
+                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg overflow-hidden z-20">
+                    <div className="py-2">
+                      <p className="px-4 py-2 text-sm font-medium text-umi-black truncate">
+                        {user?.name}
+                      </p>
                       <Link
-                        to="/admin"
+                        to="/profile"
                         className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left"
+                        onClick={() => setIsProfileOpen(false)}
                       >
-                        Admin Dashboard
+                        My Profile
                       </Link>
-                    )}
-                    <button
-                      onClick={handleLogout}
-                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left"
-                    >
-                      Logout
-                    </button>
+                      <Link
+                        to="/orders"
+                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left"
+                        onClick={() => setIsProfileOpen(false)}
+                      >
+                        My Orders
+                      </Link>
+                      {user?.isAdmin && (
+                        <Link
+                          to="/admin"
+                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left"
+                          onClick={() => setIsProfileOpen(false)}
+                        >
+                          Admin Dashboard
+                        </Link>
+                      )}
+                      <button
+                        onClick={handleLogout}
+                        className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left"
+                      >
+                        <LogOut size={16} className="mr-2" /> 
+                        Logout
+                      </button>
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
             ) : (
               <Link to="/login">
@@ -139,33 +189,40 @@ const Header = () => {
                 Home
               </Link>
             </li>
-            {categories.slice(0, 4).map((category) => (
+            {mainCategories.map((category) => (
               <li key={category.id}>
                 <Link
-                  to={`/products?category=${category.slug}`}
+                  to={`/category/${category.slug}`}
                   className="text-umi-black hover:text-umi-orange font-medium transition-colors"
                 >
                   {category.name}
                 </Link>
               </li>
             ))}
-            <li className="relative group">
-              <button className="text-umi-black hover:text-umi-orange font-medium transition-colors">
-                More
+            <li className="relative" ref={moreMenuRef}>
+              <button 
+                className="text-umi-black hover:text-umi-orange font-medium transition-colors flex items-center"
+                onClick={() => setIsMoreMenuOpen(!isMoreMenuOpen)}
+              >
+                More <ChevronDown className="h-4 w-4 ml-1" />
               </button>
-              <div className="absolute left-0 mt-2 w-48 bg-white rounded-md shadow-lg overflow-hidden z-20 hidden group-hover:block">
-                <div className="py-2">
-                  {categories.slice(4).map((category) => (
-                    <Link
-                      key={category.id}
-                      to={`/products?category=${category.slug}`}
-                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                    >
-                      {category.name}
-                    </Link>
-                  ))}
+              
+              {isMoreMenuOpen && (
+                <div className="absolute left-0 mt-2 w-48 bg-white rounded-md shadow-lg overflow-hidden z-20">
+                  <div className="py-2">
+                    {moreCategories.map((category) => (
+                      <Link
+                        key={category.id}
+                        to={`/category/${category.slug}`}
+                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                        onClick={() => setIsMoreMenuOpen(false)}
+                      >
+                        {category.name}
+                      </Link>
+                    ))}
+                  </div>
                 </div>
-              </div>
+              )}
             </li>
             <li>
               <Link
@@ -202,7 +259,7 @@ const Header = () => {
               {categories.map((category) => (
                 <li key={category.id}>
                   <Link
-                    to={`/products?category=${category.slug}`}
+                    to={`/category/${category.slug}`}
                     className="text-umi-black hover:text-umi-orange font-medium"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
@@ -235,6 +292,24 @@ const Header = () => {
                       {user?.name}
                     </p>
                   </li>
+                  <li>
+                    <Link
+                      to="/profile"
+                      className="text-umi-black hover:text-umi-orange"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      My Profile
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
+                      to="/orders"
+                      className="text-umi-black hover:text-umi-orange"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      My Orders
+                    </Link>
+                  </li>
                   {user?.isAdmin && (
                     <li>
                       <Link
@@ -252,9 +327,9 @@ const Header = () => {
                         handleLogout();
                         setIsMobileMenuOpen(false);
                       }}
-                      className="text-umi-black hover:text-umi-orange"
+                      className="text-umi-black hover:text-umi-orange flex items-center"
                     >
-                      Logout
+                      <LogOut size={16} className="mr-2" /> Logout
                     </button>
                   </li>
                 </>

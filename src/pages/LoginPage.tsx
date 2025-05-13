@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import MainLayout from "@/components/layouts/MainLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,157 +10,175 @@ import { toast } from "sonner";
 
 const LoginPage = () => {
   const navigate = useNavigate();
-  const { login, isAuthenticated } = useAuth();
-  
+  const location = useLocation();
+  const { login } = useAuth();
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  // Redirect if already authenticated
-  if (isAuthenticated) {
-    navigate("/");
-    return null;
-  }
+  // Get the intended destination, if there's one from protected route redirect
+  const from = location.state?.from?.pathname || "/";
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError("");
+    
+    if (!email || !password) {
+      setError("Please enter both email and password");
+      return;
+    }
+
+    setIsLoading(true);
     
     try {
-      setIsLoading(true);
       await login(email, password);
-      toast.success("Login successful!");
-      navigate("/");
-    } catch (error) {
-      toast.error("Invalid credentials. Please try again.");
-      console.error("Login error:", error);
+      toast.success("Login successful");
+      // Navigate to the intended destination or home
+      navigate(from, { replace: true });
+    } catch (err) {
+      setError("Invalid email or password");
+      console.error(err);
     } finally {
       setIsLoading(false);
     }
   };
 
+  const handleGoogleLogin = () => {
+    // In a real app, this would initiate Google OAuth
+    toast.info("Google OAuth would be implemented here");
+  };
+
   return (
     <MainLayout>
-      <div className="container mx-auto px-4 py-12">
-        <div className="max-w-md mx-auto bg-white rounded-lg shadow-sm p-8">
-          <h1 className="text-2xl font-bold mb-6 text-center">Login to Your Account</h1>
+      <div className="container mx-auto px-4 py-12 flex justify-center">
+        <div className="w-full max-w-md">
+          <div className="bg-white rounded-lg shadow-sm p-6 md:p-8">
+            <h1 className="text-2xl font-bold mb-6 text-center">Login to Your Account</h1>
 
-          {/* Social Login Options */}
-          <div className="mb-6">
-            <Button
-              variant="outline"
-              className="w-full mb-3 flex items-center justify-center"
-              disabled
-            >
-              <svg
-                className="mr-2 h-4 w-4"
-                viewBox="0 0 24 24"
-                fill="currentColor"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-                  fill="#4285F4"
-                />
-                <path
-                  d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-                  fill="#34A853"
-                />
-                <path
-                  d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
-                  fill="#FBBC05"
-                />
-                <path
-                  d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
-                  fill="#EA4335"
-                />
-              </svg>
-              Continue with Google
-            </Button>
-          </div>
-
-          <div className="relative mb-6">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-gray-200"></div>
-            </div>
-            <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-white text-gray-500">Or continue with email</span>
-            </div>
-          </div>
-
-          <form onSubmit={handleSubmit}>
-            <div className="space-y-4">
-              <div>
-                <label htmlFor="email" className="block text-sm font-medium mb-1">
-                  Email Address
-                </label>
-                <Input
-                  id="email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                />
+            {error && (
+              <div className="bg-red-50 text-red-500 px-4 py-2 rounded mb-4">
+                {error}
               </div>
+            )}
 
-              <div>
-                <div className="flex justify-between items-center mb-1">
-                  <label htmlFor="password" className="block text-sm font-medium">
-                    Password
+            <form onSubmit={handleSubmit}>
+              <div className="space-y-4">
+                <div>
+                  <label htmlFor="email" className="block text-sm font-medium mb-1">
+                    Email Address
                   </label>
-                  <Link
-                    to="/forgot-password"
-                    className="text-sm text-umi-orange hover:text-orange-700"
-                  >
-                    Forgot password?
-                  </Link>
+                  <Input
+                    id="email"
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="your@email.com"
+                    autoComplete="email"
+                  />
                 </div>
-                <Input
-                  id="password"
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                />
-              </div>
 
-              <div className="flex items-center">
-                <div className="flex items-center h-5">
+                <div>
+                  <div className="flex justify-between items-center mb-1">
+                    <label htmlFor="password" className="block text-sm font-medium">
+                      Password
+                    </label>
+                    <Link
+                      to="/forgot-password"
+                      className="text-xs text-umi-orange hover:underline"
+                    >
+                      Forgot Password?
+                    </Link>
+                  </div>
+                  <Input
+                    id="password"
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="••••••••"
+                    autoComplete="current-password"
+                  />
+                </div>
+
+                <div className="flex items-center">
                   <Checkbox
                     id="remember-me"
                     checked={rememberMe}
-                    onCheckedChange={(checked) => setRememberMe(!!checked)}
+                    onCheckedChange={(checked) => setRememberMe(checked as boolean)}
                   />
-                </div>
-                <div className="ml-2">
-                  <label htmlFor="remember-me" className="text-sm text-gray-600">
+                  <label
+                    htmlFor="remember-me"
+                    className="ml-2 text-sm text-gray-600 cursor-pointer"
+                  >
                     Remember me
                   </label>
                 </div>
+
+                <Button
+                  type="submit"
+                  className="w-full bg-umi-orange hover:bg-orange-700"
+                  disabled={isLoading}
+                >
+                  {isLoading ? "Logging in..." : "Login"}
+                </Button>
+              </div>
+            </form>
+
+            <div className="mt-6">
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-gray-300"></div>
+                </div>
+                <div className="relative flex justify-center text-sm">
+                  <span className="px-2 bg-white text-gray-500">Or continue with</span>
+                </div>
               </div>
 
-              <Button
-                type="submit"
-                className="w-full bg-umi-orange hover:bg-orange-700"
-                disabled={isLoading}
-              >
-                {isLoading ? "Logging in..." : "Log in"}
-              </Button>
+              <div className="mt-6">
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full"
+                  onClick={handleGoogleLogin}
+                >
+                  <svg
+                    className="h-5 w-5 mr-2"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M23.7449 12.27C23.7449 11.48 23.6749 10.73 23.5549 10H12.2549V14.51H18.7249C18.4349 15.99 17.5849 17.24 16.3249 18.09V21.09H20.1849C22.4449 19 23.7449 15.92 23.7449 12.27Z"
+                      fill="#4285F4"
+                    />
+                    <path
+                      d="M12.2549 24C15.4949 24 18.2049 22.92 20.1849 21.09L16.3249 18.09C15.2449 18.81 13.8749 19.25 12.2549 19.25C9.12492 19.25 6.47492 17.14 5.52492 14.29H1.54492V17.38C3.51492 21.3 7.56492 24 12.2549 24Z"
+                      fill="#34A853"
+                    />
+                    <path
+                      d="M5.52488 14.29C5.27488 13.57 5.14488 12.8 5.14488 12C5.14488 11.2 5.28488 10.43 5.52488 9.71V6.62H1.54488C0.724882 8.24 0.254883 10.06 0.254883 12C0.254883 13.94 0.724882 15.76 1.54488 17.38L5.52488 14.29Z"
+                      fill="#FBBC05"
+                    />
+                    <path
+                      d="M12.2549 4.75C14.0249 4.75 15.6049 5.36 16.8549 6.55L20.2749 3.13C18.2049 1.19 15.4949 0 12.2549 0C7.56492 0 3.51492 2.7 1.54492 6.62L5.52492 9.71C6.47492 6.86 9.12492 4.75 12.2549 4.75Z"
+                      fill="#EA4335"
+                    />
+                  </svg>
+                  Continue with Google
+                </Button>
+              </div>
             </div>
-          </form>
 
-          <div className="mt-6 text-center text-sm">
-            <span className="text-gray-600">Don't have an account?</span>{" "}
-            <Link to="/register" className="text-umi-orange hover:text-orange-700 font-medium">
-              Sign up
-            </Link>
-          </div>
-
-          {/* Demo account info */}
-          <div className="mt-6 p-3 bg-gray-50 rounded-md text-sm">
-            <p className="font-medium mb-1">Demo accounts:</p>
-            <p><strong>Admin:</strong> admin@umibeauty.com / password</p>
-            <p><strong>Customer:</strong> any email / any password</p>
+            <div className="mt-6 text-center text-sm">
+              <p>
+                Don't have an account?{" "}
+                <Link to="/register" className="text-umi-orange hover:underline font-medium">
+                  Register
+                </Link>
+              </p>
+            </div>
           </div>
         </div>
       </div>

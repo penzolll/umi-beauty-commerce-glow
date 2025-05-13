@@ -1,5 +1,5 @@
 
-import { createContext, useState, useContext, ReactNode } from "react";
+import { createContext, useState, useContext, ReactNode, useEffect } from "react";
 
 export interface CartItem {
   id: string;
@@ -36,7 +36,10 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     const savedItems = localStorage.getItem("cartItems");
     return savedItems ? JSON.parse(savedItems) : [];
   });
-  const [discountAmount, setDiscountAmount] = useState(0);
+  const [discountAmount, setDiscountAmount] = useState(() => {
+    const savedDiscount = localStorage.getItem("cartDiscount");
+    return savedDiscount ? parseFloat(savedDiscount) : 0;
+  });
   
   // Valid discount codes and their discount percentage
   const discountCodes = {
@@ -45,8 +48,14 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     "WELCOME15": 0.15  // 15% off
   };
 
-  const saveItems = (items: CartItem[]) => {
+  // Save cart data to localStorage whenever it changes
+  useEffect(() => {
     localStorage.setItem("cartItems", JSON.stringify(items));
+    localStorage.setItem("cartDiscount", discountAmount.toString());
+  }, [items, discountAmount]);
+
+  const saveItems = (items: CartItem[]) => {
+    setItems(items);
   };
 
   const addItem = (item: CartItem) => {
@@ -58,21 +67,16 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
             ? { ...i, quantity: i.quantity + item.quantity } 
             : i
         );
-        saveItems(updated);
         return updated;
       } else {
-        const updated = [...current, item];
-        saveItems(updated);
-        return updated;
+        return [...current, item];
       }
     });
   };
 
   const removeItem = (id: string) => {
     setItems(current => {
-      const updated = current.filter(i => i.id !== id);
-      saveItems(updated);
-      return updated;
+      return current.filter(i => i.id !== id);
     });
   };
 
@@ -83,21 +87,19 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       const updated = current.map(i => 
         i.id === id ? { ...i, quantity } : i
       );
-      saveItems(updated);
       return updated;
     });
   };
 
   const clearCart = () => {
     setItems([]);
-    saveItems([]);
     setDiscountAmount(0);
   };
 
   const totalItems = items.reduce((sum, item) => sum + item.quantity, 0);
   
   const subtotalPrice = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-  const totalPrice = subtotalPrice - discountAmount;
+  const totalPrice = Math.max(0, subtotalPrice - discountAmount);
 
   const applyDiscount = (code: string) => {
     const discountCode = discountCodes[code as keyof typeof discountCodes];

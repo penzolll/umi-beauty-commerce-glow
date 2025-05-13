@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useSearchParams } from "react-router-dom";
 import MainLayout from "@/components/layouts/MainLayout";
 import ProductCard from "@/components/shared/ProductCard";
 import { Button } from "@/components/ui/button";
@@ -11,9 +11,9 @@ import { Product } from "@/data/mockData";
 
 const ProductsPage = () => {
   const location = useLocation();
-  const queryParams = new URLSearchParams(location.search);
-  const categoryParam = queryParams.get("category");
-  const searchParam = queryParams.get("search");
+  const [searchParams] = useSearchParams();
+  const categoryParam = searchParams.get("category");
+  const searchParam = searchParams.get("search");
 
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
   const [priceRange, setPriceRange] = useState([0, 200]);
@@ -22,19 +22,40 @@ const ProductsPage = () => {
   );
   const [sortBy, setSortBy] = useState("featured");
   const [isFiltersVisible, setIsFiltersVisible] = useState(false);
+  const [isSearching, setIsSearching] = useState(false);
 
   useEffect(() => {
     let filtered = [...products];
+    setIsSearching(!!searchParam);
 
-    // Filter by search query
+    // Filter by search query with improved relevance
     if (searchParam) {
       const searchQuery = searchParam.toLowerCase();
-      filtered = filtered.filter(
-        (product) =>
-          product.name.toLowerCase().includes(searchQuery) ||
-          product.description.toLowerCase().includes(searchQuery) ||
-          product.category.toLowerCase().includes(searchQuery)
-      );
+      
+      // Split search query into words for better matching
+      const searchWords = searchQuery.split(/\s+/).filter(word => word.length > 0);
+      
+      if (searchWords.length > 0) {
+        filtered = filtered.filter(product => {
+          // Check name, description, and category
+          const nameMatch = product.name.toLowerCase().includes(searchQuery);
+          const descMatch = product.description.toLowerCase().includes(searchQuery);
+          const catMatch = product.category.toLowerCase().includes(searchQuery);
+          
+          // Check partial matches in name (higher priority)
+          const partialNameMatches = searchWords.some(word => 
+            product.name.toLowerCase().includes(word)
+          );
+          
+          // Check tag matches
+          const tagMatches = product.tags.some(tag => 
+            searchWords.some(word => tag.toLowerCase().includes(word))
+          );
+          
+          // Return true if any match is found
+          return nameMatch || descMatch || catMatch || partialNameMatches || tagMatches;
+        });
+      }
     }
 
     // Filter by selected categories
@@ -99,6 +120,15 @@ const ProductsPage = () => {
   return (
     <MainLayout>
       <div className="container mx-auto px-4 py-8">
+        {searchParam && (
+          <div className="mb-6">
+            <h1 className="text-3xl font-bold">Search Results: "{searchParam}"</h1>
+            <p className="text-gray-600 mt-2">
+              Found {filteredProducts.length} product{filteredProducts.length !== 1 ? 's' : ''}
+            </p>
+          </div>
+        )}
+        
         <div className="flex flex-col md:flex-row gap-6">
           {/* Mobile Filter Toggle */}
           <div className="md:hidden mb-4">
@@ -198,7 +228,9 @@ const ProductsPage = () => {
               <div className="text-center py-12">
                 <h3 className="text-xl font-semibold">No products found</h3>
                 <p className="text-gray-500 mt-2">
-                  Please try adjusting your filters.
+                  {isSearching 
+                    ? "Try adjusting your search terms or browse our categories."
+                    : "Please try adjusting your filters."}
                 </p>
                 <Button
                   onClick={clearFilters}
