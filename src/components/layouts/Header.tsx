@@ -3,13 +3,25 @@ import { useState, useEffect, useRef } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ShoppingCart, Search, Menu, X, ChevronDown, User } from "lucide-react";
+import { 
+  ShoppingCart, 
+  Search, 
+  Menu, 
+  X, 
+  ChevronDown, 
+  User,
+  Facebook 
+} from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCart } from "@/contexts/CartContext";
 import { categories } from "@/data/mockData";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Checkbox } from "@/components/ui/checkbox";
+import { toast } from "sonner";
 
 const Header = () => {
-  const { isAuthenticated, user, logout } = useAuth();
+  const { isAuthenticated, user, login, register, logout } = useAuth();
   const { totalItems } = useCart();
   const navigate = useNavigate();
   
@@ -19,6 +31,20 @@ const Header = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+  
+  // Login/Register form states
+  const [loginEmail, setLoginEmail] = useState("");
+  const [loginPassword, setLoginPassword] = useState("");
+  const [rememberMe, setRememberMe] = useState(false);
+  const [loginError, setLoginError] = useState("");
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
+
+  const [registerName, setRegisterName] = useState("");
+  const [registerEmail, setRegisterEmail] = useState("");
+  const [registerPassword, setRegisterPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [registerError, setRegisterError] = useState("");
+  const [isRegistering, setIsRegistering] = useState(false);
   
   const moreMenuRef = useRef<HTMLLIElement>(null);
   const profileMenuRef = useRef<HTMLDivElement>(null);
@@ -71,10 +97,95 @@ const Header = () => {
     }
   };
 
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoginError("");
+    
+    if (!loginEmail || !loginPassword) {
+      setLoginError("Please enter both email and password");
+      return;
+    }
+
+    setIsLoggingIn(true);
+    
+    try {
+      await login(loginEmail, loginPassword, rememberMe);
+      toast.success("Login successful");
+      setLoginEmail("");
+      setLoginPassword("");
+      setIsProfileOpen(false);
+    } catch (err) {
+      setLoginError("Invalid email or password");
+      console.error(err);
+    } finally {
+      setIsLoggingIn(false);
+    }
+  };
+
+  const handleRegister = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setRegisterError("");
+
+    // Basic validation
+    if (!registerName || !registerEmail || !registerPassword || !confirmPassword) {
+      setRegisterError("All fields are required");
+      return;
+    }
+
+    // Password matching validation
+    if (registerPassword !== confirmPassword) {
+      setRegisterError("Passwords don't match");
+      return;
+    }
+
+    // Password strength validation (basic)
+    if (registerPassword.length < 6) {
+      setRegisterError("Password must be at least 6 characters");
+      return;
+    }
+
+    setIsRegistering(true);
+
+    try {
+      // Check for duplicate email (mock implementation)
+      if (registerEmail === "admin@umibeauty.com") {
+        throw new Error("Email already registered");
+      }
+      
+      // Register the user
+      await register(registerEmail, registerPassword, registerName);
+      toast.success("Registration successful! A verification email has been sent.");
+      
+      // Clear form
+      setRegisterName("");
+      setRegisterEmail("");
+      setRegisterPassword("");
+      setConfirmPassword("");
+      
+      // Close profile sheet
+      setIsProfileOpen(false);
+    } catch (err: any) {
+      setRegisterError(err.message || "Registration failed");
+      console.error(err);
+    } finally {
+      setIsRegistering(false);
+    }
+  };
+
   const handleLogout = () => {
     logout();
     navigate("/");
     setIsProfileOpen(false);
+  };
+
+  const handleGoogleLogin = () => {
+    // In a real app, this would initiate Google OAuth
+    toast.info("Google OAuth would be implemented here");
+  };
+
+  const handleFacebookLogin = () => {
+    // In a real app, this would initiate Facebook OAuth
+    toast.info("Facebook OAuth would be implemented here");
   };
 
   // Split categories for main nav and More dropdown
@@ -106,14 +217,6 @@ const Header = () => {
                   className={({isActive}) => `nav-item ${isActive ? 'active' : ''}`}
                 >
                   Home
-                </NavLink>
-              </li>
-              <li>
-                <NavLink 
-                  to="/products" 
-                  className={({isActive}) => `nav-item ${isActive ? 'active' : ''}`}
-                >
-                  Shop
                 </NavLink>
               </li>
               {mainCategories.map(category => (
@@ -188,14 +291,16 @@ const Header = () => {
               )}
             </Link>
 
-            {/* User account */}
+            {/* User account - Sheet for login/register on click */}
             {isAuthenticated ? (
               <div ref={profileMenuRef} className="relative">
                 <button 
                   className="flex items-center text-gray-700 hover:text-umi-orange transition-colors"
                   onClick={() => setIsProfileOpen(!isProfileOpen)}
                 >
-                  <User className="h-5 w-5" />
+                  <div className="h-7 w-7 rounded-full bg-gray-200 flex items-center justify-center text-sm font-medium overflow-hidden">
+                    {user?.name.charAt(0).toUpperCase()}
+                  </div>
                 </button>
                 
                 {isProfileOpen && (
@@ -238,9 +343,266 @@ const Header = () => {
                 )}
               </div>
             ) : (
-              <Link to="/login" className="text-gray-700 hover:text-umi-orange transition-colors">
-                <User className="h-5 w-5" />
-              </Link>
+              <Sheet>
+                <SheetTrigger asChild>
+                  <button className="text-gray-700 hover:text-umi-orange transition-colors">
+                    <User className="h-5 w-5" />
+                  </button>
+                </SheetTrigger>
+                <SheetContent className="w-full sm:max-w-md p-0 overflow-y-auto">
+                  <Tabs defaultValue="login" className="w-full">
+                    <TabsList className="grid grid-cols-2 w-full rounded-none">
+                      <TabsTrigger value="login" className="rounded-none py-4">Login</TabsTrigger>
+                      <TabsTrigger value="register" className="rounded-none py-4">Register</TabsTrigger>
+                    </TabsList>
+                    
+                    {/* Login Tab */}
+                    <TabsContent value="login" className="p-6">
+                      <div className="space-y-6">
+                        <div className="text-center">
+                          <h3 className="text-xl font-bold">Login to Your Account</h3>
+                          <p className="text-sm text-gray-500 mt-1">Welcome back to UMI Beauty</p>
+                        </div>
+                        
+                        {loginError && (
+                          <div className="bg-red-50 text-red-500 px-4 py-2 rounded">
+                            {loginError}
+                          </div>
+                        )}
+                        
+                        <form onSubmit={handleLogin} className="space-y-4">
+                          <div>
+                            <label htmlFor="email" className="block text-sm font-medium mb-1">Email Address</label>
+                            <Input
+                              id="email"
+                              type="email"
+                              value={loginEmail}
+                              onChange={(e) => setLoginEmail(e.target.value)}
+                              placeholder="your@email.com"
+                              autoComplete="email"
+                            />
+                          </div>
+                          
+                          <div>
+                            <div className="flex justify-between items-center mb-1">
+                              <label htmlFor="password" className="block text-sm font-medium">Password</label>
+                              <Link to="/forgot-password" className="text-xs text-umi-orange hover:underline">
+                                Forgot Password?
+                              </Link>
+                            </div>
+                            <Input
+                              id="password"
+                              type="password"
+                              value={loginPassword}
+                              onChange={(e) => setLoginPassword(e.target.value)}
+                              placeholder="••••••••"
+                              autoComplete="current-password"
+                            />
+                          </div>
+                          
+                          <div className="flex items-center">
+                            <Checkbox
+                              id="remember-me"
+                              checked={rememberMe}
+                              onCheckedChange={(checked) => setRememberMe(checked as boolean)}
+                            />
+                            <label htmlFor="remember-me" className="ml-2 text-sm text-gray-600 cursor-pointer">
+                              Remember me
+                            </label>
+                          </div>
+                          
+                          <Button
+                            type="submit"
+                            className="w-full bg-umi-orange hover:bg-orange-700"
+                            disabled={isLoggingIn}
+                          >
+                            {isLoggingIn ? "Logging in..." : "Login"}
+                          </Button>
+                        </form>
+                        
+                        <div className="relative">
+                          <div className="absolute inset-0 flex items-center">
+                            <div className="w-full border-t border-gray-300"></div>
+                          </div>
+                          <div className="relative flex justify-center text-sm">
+                            <span className="px-2 bg-white text-gray-500">Or continue with</span>
+                          </div>
+                        </div>
+                        
+                        <div className="grid grid-cols-2 gap-3">
+                          <Button
+                            type="button"
+                            variant="outline"
+                            className="w-full"
+                            onClick={handleGoogleLogin}
+                          >
+                            <svg
+                              className="h-4 w-4 mr-2"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              xmlns="http://www.w3.org/2000/svg"
+                            >
+                              <path
+                                d="M23.7449 12.27C23.7449 11.48 23.6749 10.73 23.5549 10H12.2549V14.51H18.7249C18.4349 15.99 17.5849 17.24 16.3249 18.09V21.09H20.1849C22.4449 19 23.7449 15.92 23.7449 12.27Z"
+                                fill="#4285F4"
+                              />
+                              <path
+                                d="M12.2549 24C15.4949 24 18.2049 22.92 20.1849 21.09L16.3249 18.09C15.2449 18.81 13.8749 19.25 12.2549 19.25C9.12492 19.25 6.47492 17.14 5.52492 14.29H1.54492V17.38C3.51492 21.3 7.56492 24 12.2549 24Z"
+                                fill="#34A853"
+                              />
+                              <path
+                                d="M5.52488 14.29C5.27488 13.57 5.14488 12.8 5.14488 12C5.14488 11.2 5.28488 10.43 5.52488 9.71V6.62H1.54488C0.724882 8.24 0.254883 10.06 0.254883 12C0.254883 13.94 0.724882 15.76 1.54488 17.38L5.52488 14.29Z"
+                                fill="#FBBC05"
+                              />
+                              <path
+                                d="M12.2549 4.75C14.0249 4.75 15.6049 5.36 16.8549 6.55L20.2749 3.13C18.2049 1.19 15.4949 0 12.2549 0C7.56492 0 3.51492 2.7 1.54492 6.62L5.52492 9.71C6.47492 6.86 9.12492 4.75 12.2549 4.75Z"
+                                fill="#EA4335"
+                              />
+                            </svg>
+                            Google
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            className="w-full"
+                            onClick={handleFacebookLogin}
+                          >
+                            <Facebook className="h-4 w-4 mr-2 text-blue-600" />
+                            Facebook
+                          </Button>
+                        </div>
+                      </div>
+                    </TabsContent>
+                    
+                    {/* Register Tab */}
+                    <TabsContent value="register" className="p-6">
+                      <div className="space-y-6">
+                        <div className="text-center">
+                          <h3 className="text-xl font-bold">Create Account</h3>
+                          <p className="text-sm text-gray-500 mt-1">Join UMI Beauty today</p>
+                        </div>
+                        
+                        {registerError && (
+                          <div className="bg-red-50 text-red-500 px-4 py-2 rounded">
+                            {registerError}
+                          </div>
+                        )}
+                        
+                        <form onSubmit={handleRegister} className="space-y-4">
+                          <div>
+                            <label htmlFor="name" className="block text-sm font-medium mb-1">Full Name</label>
+                            <Input
+                              id="name"
+                              type="text"
+                              value={registerName}
+                              onChange={(e) => setRegisterName(e.target.value)}
+                              placeholder="John Doe"
+                              autoComplete="name"
+                            />
+                          </div>
+                          
+                          <div>
+                            <label htmlFor="register-email" className="block text-sm font-medium mb-1">Email Address</label>
+                            <Input
+                              id="register-email"
+                              type="email"
+                              value={registerEmail}
+                              onChange={(e) => setRegisterEmail(e.target.value)}
+                              placeholder="your@email.com"
+                              autoComplete="email"
+                            />
+                          </div>
+                          
+                          <div>
+                            <label htmlFor="register-password" className="block text-sm font-medium mb-1">Password</label>
+                            <Input
+                              id="register-password"
+                              type="password"
+                              value={registerPassword}
+                              onChange={(e) => setRegisterPassword(e.target.value)}
+                              placeholder="••••••••"
+                              autoComplete="new-password"
+                            />
+                            <p className="text-xs text-gray-500 mt-1">Must be at least 6 characters</p>
+                          </div>
+                          
+                          <div>
+                            <label htmlFor="confirm-password" className="block text-sm font-medium mb-1">Confirm Password</label>
+                            <Input
+                              id="confirm-password"
+                              type="password"
+                              value={confirmPassword}
+                              onChange={(e) => setConfirmPassword(e.target.value)}
+                              placeholder="••••••••"
+                              autoComplete="new-password"
+                            />
+                          </div>
+                          
+                          <Button
+                            type="submit"
+                            className="w-full bg-umi-orange hover:bg-orange-700"
+                            disabled={isRegistering}
+                          >
+                            {isRegistering ? "Creating Account..." : "Create Account"}
+                          </Button>
+                        </form>
+                        
+                        <div className="relative">
+                          <div className="absolute inset-0 flex items-center">
+                            <div className="w-full border-t border-gray-300"></div>
+                          </div>
+                          <div className="relative flex justify-center text-sm">
+                            <span className="px-2 bg-white text-gray-500">Or continue with</span>
+                          </div>
+                        </div>
+                        
+                        <div className="grid grid-cols-2 gap-3">
+                          <Button
+                            type="button"
+                            variant="outline"
+                            className="w-full"
+                            onClick={handleGoogleLogin}
+                          >
+                            <svg
+                              className="h-4 w-4 mr-2"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              xmlns="http://www.w3.org/2000/svg"
+                            >
+                              <path
+                                d="M23.7449 12.27C23.7449 11.48 23.6749 10.73 23.5549 10H12.2549V14.51H18.7249C18.4349 15.99 17.5849 17.24 16.3249 18.09V21.09H20.1849C22.4449 19 23.7449 15.92 23.7449 12.27Z"
+                                fill="#4285F4"
+                              />
+                              <path
+                                d="M12.2549 24C15.4949 24 18.2049 22.92 20.1849 21.09L16.3249 18.09C15.2449 18.81 13.8749 19.25 12.2549 19.25C9.12492 19.25 6.47492 17.14 5.52492 14.29H1.54492V17.38C3.51492 21.3 7.56492 24 12.2549 24Z"
+                                fill="#34A853"
+                              />
+                              <path
+                                d="M5.52488 14.29C5.27488 13.57 5.14488 12.8 5.14488 12C5.14488 11.2 5.28488 10.43 5.52488 9.71V6.62H1.54488C0.724882 8.24 0.254883 10.06 0.254883 12C0.254883 13.94 0.724882 15.76 1.54488 17.38L5.52488 14.29Z"
+                                fill="#FBBC05"
+                              />
+                              <path
+                                d="M12.2549 4.75C14.0249 4.75 15.6049 5.36 16.8549 6.55L20.2749 3.13C18.2049 1.19 15.4949 0 12.2549 0C7.56492 0 3.51492 2.7 1.54492 6.62L5.52492 9.71C6.47492 6.86 9.12492 4.75 12.2549 4.75Z"
+                                fill="#EA4335"
+                              />
+                            </svg>
+                            Google
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            className="w-full"
+                            onClick={handleFacebookLogin}
+                          >
+                            <Facebook className="h-4 w-4 mr-2 text-blue-600" />
+                            Facebook
+                          </Button>
+                        </div>
+                      </div>
+                    </TabsContent>
+                  </Tabs>
+                </SheetContent>
+              </Sheet>
             )}
 
             {/* Mobile menu button */}
@@ -285,7 +647,7 @@ const Header = () => {
         onClick={() => setIsMobileMenuOpen(false)}
       >
         <div 
-          className={`fixed top-0 left-0 bottom-0 w-64 bg-white z-50 transform transition-transform duration-300 ease-in-out p-5 overflow-y-auto ${
+          className={`fixed top-0 left-0 bottom-0 w-80 bg-white z-50 transform transition-transform duration-300 ease-in-out p-5 overflow-y-auto ${
             isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
           }`}
           onClick={(e) => e.stopPropagation()}
@@ -299,6 +661,37 @@ const Header = () => {
             </button>
           </div>
           
+          <div className="border-b border-gray-200 pb-4 mb-4">
+            {isAuthenticated ? (
+              <div className="flex items-center space-x-3 mb-6">
+                <div className="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center text-sm font-medium">
+                  {user?.name.charAt(0).toUpperCase()}
+                </div>
+                <div>
+                  <p className="font-medium">{user?.name}</p>
+                  <p className="text-sm text-gray-500">{user?.email}</p>
+                </div>
+              </div>
+            ) : (
+              <div className="flex space-x-2 mb-6">
+                <Link 
+                  to="/login" 
+                  className="bg-umi-orange text-white py-2 px-4 rounded text-sm font-medium flex-1 text-center"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  Login
+                </Link>
+                <Link 
+                  to="/register" 
+                  className="border border-gray-300 text-gray-700 py-2 px-4 rounded text-sm font-medium flex-1 text-center"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  Register
+                </Link>
+              </div>
+            )}
+          </div>
+          
           <nav className="mb-6">
             <ul className="space-y-4">
               <li>
@@ -308,15 +701,6 @@ const Header = () => {
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
                   Home
-                </NavLink>
-              </li>
-              <li>
-                <NavLink 
-                  to="/products" 
-                  className={({isActive}) => `block py-1 ${isActive ? 'text-umi-orange font-medium' : 'text-gray-700'}`}
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  Shop
                 </NavLink>
               </li>
               {categories.map(category => (
@@ -351,10 +735,9 @@ const Header = () => {
             </ul>
           </nav>
           
-          <div className="border-t border-gray-100 pt-4">
-            {isAuthenticated ? (
+          {isAuthenticated && (
+            <div className="border-t border-gray-200 pt-4">
               <div className="space-y-3">
-                <p className="font-medium">{user?.name}</p>
                 <Link
                   to="/profile"
                   className="block text-gray-700 hover:text-umi-orange"
@@ -379,25 +762,8 @@ const Header = () => {
                   Logout
                 </button>
               </div>
-            ) : (
-              <div className="flex flex-col space-y-2">
-                <Link 
-                  to="/login" 
-                  className="block text-gray-700 hover:text-umi-orange"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  Login
-                </Link>
-                <Link 
-                  to="/register" 
-                  className="block text-gray-700 hover:text-umi-orange"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  Register
-                </Link>
-              </div>
-            )}
-          </div>
+            </div>
+          )}
         </div>
       </div>
     </header>

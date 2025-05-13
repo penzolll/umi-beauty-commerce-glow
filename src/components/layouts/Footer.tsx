@@ -2,7 +2,7 @@
 import { Link } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Facebook, Instagram } from "lucide-react";
+import { Facebook, Instagram, Twitter } from "lucide-react";
 
 const Footer = () => {
   return (
@@ -16,9 +16,9 @@ const Footer = () => {
               <img 
                 src="/lovable-uploads/ed3fc7f5-c106-4051-a74c-40f53d5e30b1.png" 
                 alt="UMI Beauty" 
-                className="h-10 w-10 mr-2"
+                className="h-10 w-10 mr-2 bg-white rounded-full p-1"
               />
-              <h3 className="text-xl font-bold tracking-wider">UMI BEAUTY</h3>
+              <h3 className="text-xl font-bold tracking-wider uppercase">UMI Beauty</h3>
             </div>
             <p className="text-gray-300 mb-4">
               Premium beauty products designed for all skin types. Discover your natural beauty with UMI.
@@ -32,13 +32,17 @@ const Footer = () => {
                 <span className="sr-only">Instagram</span>
                 <Instagram className="h-5 w-5" />
               </a>
+              <a href="#" className="text-gray-300 hover:text-umi-orange transition-colors p-2 border border-gray-700 rounded-full">
+                <span className="sr-only">Twitter</span>
+                <Twitter className="h-5 w-5" />
+              </a>
             </div>
           </div>
 
           {/* Shop Links */}
           <div>
-            <h4 className="text-lg font-bold mb-4 uppercase">Shop</h4>
-            <ul className="space-y-2">
+            <h4 className="text-lg font-bold mb-6 uppercase">Shop</h4>
+            <ul className="space-y-3">
               <li>
                 <Link to="/category/skincare" className="text-gray-300 hover:text-umi-orange transition-colors">
                   Skincare
@@ -74,8 +78,8 @@ const Footer = () => {
 
           {/* Support */}
           <div>
-            <h4 className="text-lg font-bold mb-4 uppercase">Support</h4>
-            <ul className="space-y-2">
+            <h4 className="text-lg font-bold mb-6 uppercase">Support</h4>
+            <ul className="space-y-3">
               <li>
                 <Link to="/contact" className="text-gray-300 hover:text-umi-orange transition-colors">
                   Contact Us
@@ -111,19 +115,19 @@ const Footer = () => {
 
           {/* Newsletter */}
           <div>
-            <h4 className="text-lg font-bold mb-4 uppercase">Newsletter</h4>
+            <h4 className="text-lg font-bold mb-6 uppercase">Newsletter</h4>
             <p className="text-gray-300 mb-4">
               Subscribe to receive updates, access to exclusive deals, and more.
             </p>
-            <form className="space-y-2">
+            <form className="space-y-3">
               <Input
                 type="email"
                 placeholder="Your email address"
-                className="bg-gray-800 border-gray-700 text-white placeholder:text-gray-400 focus-visible:ring-umi-orange"
+                className="bg-gray-800 border-gray-700 text-white placeholder:text-gray-400 focus-visible:ring-umi-orange rounded-none"
               />
               <Button
                 type="submit"
-                className="w-full bg-umi-orange hover:bg-orange-600 text-white"
+                className="w-full bg-umi-orange hover:bg-orange-600 text-white rounded-none uppercase tracking-wide"
               >
                 Subscribe
               </Button>

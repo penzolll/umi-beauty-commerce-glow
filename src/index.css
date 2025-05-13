@@ -140,3 +140,58 @@
 .carousel-item {
   @apply transition-transform duration-300 ease-out;
 }
+
+/* Tabs styling for login/register */
+.tabs-container {
+  @apply w-full;
+}
+
+.tabs-header {
+  @apply flex bg-gray-100;
+}
+
+.tab-trigger {
+  @apply py-3 px-4 font-medium flex-1 text-center hover:bg-gray-200 cursor-pointer border-b-2 border-transparent;
+}
+
+.tab-trigger.active {
+  @apply border-umi-orange text-umi-orange bg-white;
+}
+
+.tab-content {
+  @apply py-4 px-6;
+}
+
+/* Add modal animation */
+.auth-modal {
+  animation: modal-fade-in 0.3s ease;
+}
+
+@keyframes modal-fade-in {
+  from { opacity: 0; transform: translateY(-20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Improve form styling */
+.form-input {
+  @apply w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-umi-orange focus:border-transparent;
+}
+
+.form-label {
+  @apply block text-sm font-medium mb-1;
+}
+
+.form-error {
+  @apply text-red-500 text-xs mt-1;
+}
+
+/* Mobile responsiveness improvements */
+@media (max-width: 640px) {
+  .mobile-menu {
+    @apply fixed inset-0 bg-black/50 z-50;
+  }
+  
+  .mobile-menu-content {
+    @apply fixed top-0 left-0 bottom-0 w-4/5 max-w-sm bg-white z-50 p-5 overflow-y-auto transform transition-transform;
+  }
+}

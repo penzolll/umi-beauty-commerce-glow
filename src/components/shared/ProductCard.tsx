@@ -28,8 +28,13 @@ const ProductCard = ({ product }: ProductCardProps) => {
     toast.success(`${product.name} added to cart`);
   };
 
+  // Calculate discount percentage
+  const discountPercentage = product.discountPrice 
+    ? Math.round(((product.price - product.discountPrice) / product.price) * 100)
+    : 0;
+
   return (
-    <div className="product-card group h-full flex flex-col">
+    <div className="product-card group h-full flex flex-col card-hover">
       {/* Product Image */}
       <Link to={`/products/${product.id}`} className="block relative overflow-hidden">
         <div className="aspect-[3/4] w-full overflow-hidden bg-gray-100">
@@ -43,18 +48,18 @@ const ProductCard = ({ product }: ProductCardProps) => {
         {/* Product Badges */}
         <div className="absolute top-2 left-2 flex flex-col gap-1">
           {product.new && (
-            <span className="bg-blue-600 text-white text-xs font-medium px-2 py-1 uppercase">
+            <span className="bg-blue-600 text-white text-xs font-bold px-2 py-1 uppercase">
               New
             </span>
           )}
           {product.bestSeller && (
-            <span className="bg-yellow-500 text-white text-xs font-medium px-2 py-1 uppercase">
+            <span className="bg-yellow-500 text-white text-xs font-bold px-2 py-1 uppercase">
               Best Seller
             </span>
           )}
           {product.discountPrice && (
-            <span className="bg-umi-orange text-white text-xs font-medium px-2 py-1 uppercase">
-              Sale
+            <span className="bg-umi-orange text-white text-xs font-bold px-2 py-1 uppercase">
+              Diskon {discountPercentage}%
             </span>
           )}
         </div>
