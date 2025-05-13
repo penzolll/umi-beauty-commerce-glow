@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import AdminLayout from "@/components/layouts/AdminLayout";
 import { Button } from "@/components/ui/button";
@@ -65,6 +66,14 @@ const AdminOrdersPage = () => {
       default:
         return 'bg-gray-100 text-gray-800';
     }
+  };
+
+  // Helper function to format total values safely
+  const formatTotal = (total) => {
+    if (typeof total === 'number') {
+      return `$${total.toFixed(2)}`;
+    }
+    return `$${total}`;
   };
 
   return (
@@ -138,7 +147,7 @@ const AdminOrdersPage = () => {
                     {formatDate(order.date)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    ${order.total.toFixed(2)}
+                    {formatTotal(order.total)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusBadgeClass(order.status)}`}>
@@ -199,7 +208,7 @@ const AdminOrdersPage = () => {
                 </div>
                 <div>
                   <h4 className="text-sm font-medium text-gray-500 mb-1">Total</h4>
-                  <p>${typeof currentOrder.total === 'number' ? currentOrder.total.toFixed(2) : currentOrder.total}</p>
+                  <p>{formatTotal(currentOrder.total)}</p>
                 </div>
               </div>
 
@@ -273,11 +282,11 @@ const AdminOrdersPage = () => {
                     </tbody>
                     <tfoot className="bg-gray-50">
                       <tr>
-                        <td colSpan="3" className="px-4 py-2 text-sm font-medium text-right">
+                        <td colSpan={3} className="px-4 py-2 text-sm font-medium text-right">
                           Total
                         </td>
                         <td className="px-4 py-2 text-sm font-medium text-right">
-                          ${typeof currentOrder.total === 'number' ? currentOrder.total.toFixed(2) : currentOrder.total}
+                          {formatTotal(currentOrder.total)}
                         </td>
                       </tr>
                     </tfoot>
