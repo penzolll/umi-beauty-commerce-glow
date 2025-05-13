@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import AdminLayout from "@/components/layouts/AdminLayout";
 import { Button } from "@/components/ui/button";
@@ -200,7 +199,7 @@ const AdminOrdersPage = () => {
                 </div>
                 <div>
                   <h4 className="text-sm font-medium text-gray-500 mb-1">Total</h4>
-                  <p>${currentOrder.total.toFixed(2)}</p>
+                  <p>${typeof currentOrder.total === 'number' ? currentOrder.total.toFixed(2) : currentOrder.total}</p>
                 </div>
               </div>
 
@@ -278,7 +277,7 @@ const AdminOrdersPage = () => {
                           Total
                         </td>
                         <td className="px-4 py-2 text-sm font-medium text-right">
-                          ${currentOrder.total.toFixed(2)}
+                          ${typeof currentOrder.total === 'number' ? currentOrder.total.toFixed(2) : currentOrder.total}
                         </td>
                       </tr>
                     </tfoot>
