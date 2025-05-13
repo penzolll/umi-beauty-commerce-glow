@@ -119,7 +119,7 @@ const ProductsPage = () => {
 
   return (
     <MainLayout>
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 py-8 max-w-[1200px]">
         {searchParam && (
           <div className="mb-6">
             <h1 className="text-3xl font-bold">Search Results: "{searchParam}"</h1>
@@ -240,9 +240,11 @@ const ProductsPage = () => {
                 </Button>
               </div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
                 {filteredProducts.map((product) => (
-                  <ProductCard key={product.id} product={product} />
+                  <div key={product.id} className="max-w-[180px]">
+                    <ProductCard key={product.id} product={product} />
+                  </div>
                 ))}
               </div>
             )}

@@ -34,10 +34,10 @@ const ProductCard = ({ product }: ProductCardProps) => {
     : 0;
 
   return (
-    <div className="product-card group h-full flex flex-col card-hover">
-      {/* Product Image */}
+    <div className="product-card group h-full flex flex-col card-hover max-w-full">
+      {/* Product Image with fixed height */}
       <Link to={`/products/${product.id}`} className="block relative overflow-hidden">
-        <div className="aspect-[3/4] w-full overflow-hidden bg-gray-100">
+        <div className="h-[200px] w-full overflow-hidden bg-gray-100">
           <img
             src={product.images[0]}
             alt={product.name}
@@ -45,30 +45,30 @@ const ProductCard = ({ product }: ProductCardProps) => {
           />
         </div>
           
-        {/* Product Badges */}
+        {/* Product Badges with smaller font */}
         <div className="absolute top-2 left-2 flex flex-col gap-1">
           {product.new && (
-            <span className="bg-blue-600 text-white text-xs font-bold px-2 py-1 uppercase">
+            <span className="bg-blue-600 text-white text-xs font-bold px-2 py-1 uppercase text-[0.75rem]">
               New
             </span>
           )}
           {product.bestSeller && (
-            <span className="bg-yellow-500 text-white text-xs font-bold px-2 py-1 uppercase">
+            <span className="bg-yellow-500 text-white text-xs font-bold px-2 py-1 uppercase text-[0.75rem]">
               Best Seller
             </span>
           )}
           {product.discountPrice && (
-            <span className="bg-umi-orange text-white text-xs font-bold px-2 py-1 uppercase">
+            <span className="bg-umi-orange text-white text-xs font-bold px-1 py-0.5 uppercase text-[0.75rem]">
               Diskon {discountPercentage}%
             </span>
           )}
         </div>
       </Link>
       
-      {/* Product Info */}
-      <div className="p-4 flex flex-col flex-grow">
+      {/* Product Info with reduced padding */}
+      <div className="p-3 flex flex-col flex-grow">
         <Link to={`/products/${product.id}`}>
-          <h3 className="text-md font-medium text-gray-800 group-hover:text-umi-orange transition-colors">
+          <h3 className="text-sm font-medium text-gray-800 group-hover:text-umi-orange transition-colors">
             {product.name}
           </h3>
         </Link>
@@ -77,7 +77,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
           {Array.from({ length: 5 }).map((_, i) => (
             <svg
               key={i}
-              className={`w-4 h-4 ${
+              className={`w-3 h-3 ${
                 i < product.rating ? "text-yellow-400" : "text-gray-300"
               }`}
               fill="currentColor"
@@ -91,18 +91,18 @@ const ProductCard = ({ product }: ProductCardProps) => {
           </span>
         </div>
         
-        <div className="mt-2 mb-4 flex justify-between items-center">
+        <div className="mt-2 mb-2 flex justify-between items-center">
           {product.discountPrice ? (
             <div className="flex items-center">
-              <span className="text-lg font-bold text-umi-orange">
+              <span className="text-base font-bold text-umi-orange">
                 ${product.discountPrice.toFixed(2)}
               </span>
-              <span className="text-sm text-gray-400 line-through ml-2">
+              <span className="text-xs text-gray-400 line-through ml-2">
                 ${product.price.toFixed(2)}
               </span>
             </div>
           ) : (
-            <span className="text-lg font-bold text-gray-800">
+            <span className="text-base font-bold text-gray-800">
               ${product.price.toFixed(2)}
             </span>
           )}
@@ -113,13 +113,13 @@ const ProductCard = ({ product }: ProductCardProps) => {
           <Button
             onClick={handleAddToCart}
             disabled={product.stock <= 0}
-            className={`w-full flex items-center justify-center text-sm font-medium rounded-none ${
+            className={`w-full flex items-center justify-center text-xs font-medium rounded-none py-1 ${
               product.stock > 0 
                 ? "bg-umi-black hover:bg-umi-orange text-white" 
                 : "bg-gray-200 text-gray-400 cursor-not-allowed"
             }`}
           >
-            <ShoppingCart className="mr-2 h-4 w-4" />
+            <ShoppingCart className="mr-1 h-3 w-3" />
             {product.stock > 0 ? "Add to Cart" : "Out of Stock"}
           </Button>
         </div>

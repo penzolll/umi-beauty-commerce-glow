@@ -27,15 +27,15 @@ const HomePage = () => {
       <HeroBanner />
 
       {/* Categories Grid */}
-      <section className="py-16 bg-white">
-        <div className="container mx-auto px-4">
-          <div className="flex flex-col items-center mb-10 text-center">
+      <section className="py-12 bg-white my-12">
+        <div className="container mx-auto px-4 max-w-[1200px]">
+          <div className="flex flex-col items-center mb-8 text-center">
             <h2 className="text-3xl font-bold mb-4 uppercase tracking-wide">Shop by Category</h2>
             <div className="w-16 h-1 bg-umi-orange mb-4"></div>
             <p className="max-w-2xl text-gray-600">Discover our curated collection of premium beauty products designed to enhance your natural beauty.</p>
           </div>
           
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {categories.slice(0, 4).map((category) => (
               <Link 
                 key={category.id} 
@@ -62,9 +62,9 @@ const HomePage = () => {
       </section>
 
       {/* Featured Products Carousel - "Bundling Lebih Hemat" */}
-      <section className="py-16 bg-gray-50">
-        <div className="container mx-auto px-4">
-          <div className="flex flex-col items-center mb-10 text-center">
+      <section className="py-12 bg-gray-50 my-12">
+        <div className="container mx-auto px-4 max-w-[1200px]">
+          <div className="flex flex-col items-center mb-8 text-center">
             <h2 className="text-3xl font-bold mb-4 uppercase tracking-wide">Bundling Lebih Hemat</h2>
             <div className="w-16 h-1 bg-umi-orange mb-4"></div>
             <p className="max-w-2xl text-gray-600">Save more with our specially curated product bundles.</p>
@@ -77,18 +77,28 @@ const HomePage = () => {
             }}
             className="w-full relative"
           >
-            <CarouselContent className="-ml-2 md:-ml-4">
+            <CarouselContent className="-ml-4">
               {featuredProducts.map((product) => (
-                <CarouselItem key={product.id} className="pl-2 md:pl-4 sm:basis-1/2 md:basis-1/3 lg:basis-1/4">
+                <CarouselItem 
+                  key={product.id} 
+                  className="pl-4 lg:basis-1/5 md:basis-1/3 sm:basis-1/2"
+                  style={{
+                    maxWidth: {
+                      lg: '180px',
+                      md: '200px',
+                      sm: '150px'
+                    }[window.innerWidth >= 1024 ? 'lg' : window.innerWidth >= 768 ? 'md' : 'sm']
+                  }}
+                >
                   <ProductCard product={product} />
                 </CarouselItem>
               ))}
             </CarouselContent>
-            <CarouselPrevious className="left-1 md:-left-6 size-9 md:size-10" />
-            <CarouselNext className="right-1 md:-right-6 size-9 md:size-10" />
+            <CarouselPrevious className="-left-10 size-9" />
+            <CarouselNext className="-right-10 size-9" />
           </Carousel>
           
-          <div className="text-center mt-10">
+          <div className="text-center mt-8">
             <Link to="/products">
               <Button className="bg-umi-black hover:bg-umi-orange text-white uppercase tracking-wide px-8 py-6">
                 View All Products
@@ -99,9 +109,9 @@ const HomePage = () => {
       </section>
 
       {/* Best Sellers - "Rekomendasi Produk Untukmu" */}
-      <section className="py-16 bg-white">
-        <div className="container mx-auto px-4">
-          <div className="flex flex-col items-center mb-10 text-center">
+      <section className="py-12 bg-white my-12">
+        <div className="container mx-auto px-4 max-w-[1200px]">
+          <div className="flex flex-col items-center mb-8 text-center">
             <h2 className="text-3xl font-bold mb-4 uppercase tracking-wide">Rekomendasi Produk Untukmu</h2>
             <div className="w-16 h-1 bg-umi-orange mb-4"></div>
             <p className="max-w-2xl text-gray-600">Our most loved products that customers can't get enough of.</p>
@@ -114,23 +124,33 @@ const HomePage = () => {
             }}
             className="w-full relative"
           >
-            <CarouselContent className="-ml-2 md:-ml-4">
+            <CarouselContent className="-ml-4">
               {bestSellers.map((product) => (
-                <CarouselItem key={product.id} className="pl-2 md:pl-4 sm:basis-1/2 md:basis-1/3 lg:basis-1/4">
+                <CarouselItem 
+                  key={product.id} 
+                  className="pl-4 lg:basis-1/5 md:basis-1/3 sm:basis-1/2"
+                  style={{
+                    maxWidth: {
+                      lg: '180px',
+                      md: '200px',
+                      sm: '150px'
+                    }[window.innerWidth >= 1024 ? 'lg' : window.innerWidth >= 768 ? 'md' : 'sm']
+                  }}
+                >
                   <ProductCard product={product} />
                 </CarouselItem>
               ))}
             </CarouselContent>
-            <CarouselPrevious className="left-1 md:-left-6 size-9 md:size-10" />
-            <CarouselNext className="right-1 md:-right-6 size-9 md:size-10" />
+            <CarouselPrevious className="-left-10 size-9" />
+            <CarouselNext className="-right-10 size-9" />
           </Carousel>
         </div>
       </section>
 
       {/* Testimonials */}
-      <section className="py-16 bg-gray-50">
-        <div className="container mx-auto px-4">
-          <div className="flex flex-col items-center mb-10 text-center">
+      <section className="py-12 bg-gray-50 my-12">
+        <div className="container mx-auto px-4 max-w-[1200px]">
+          <div className="flex flex-col items-center mb-8 text-center">
             <h2 className="text-3xl font-bold mb-4 uppercase tracking-wide">What Our Customers Say</h2>
             <div className="w-16 h-1 bg-umi-orange mb-4"></div>
             <p className="max-w-2xl text-gray-600">Read what our valued customers have to say about their experience with our products.</p>
@@ -181,7 +201,7 @@ const HomePage = () => {
           />
         </div>
         
-        <div className="container mx-auto px-4 text-center relative z-20">
+        <div className="container mx-auto px-4 text-center relative z-20 max-w-[1200px]">
           <div className="max-w-2xl mx-auto">
             <h2 className="text-3xl font-bold mb-4 uppercase tracking-wide">Join the UMI Beauty Family</h2>
             <p className="text-xl mb-6">
