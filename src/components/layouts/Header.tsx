@@ -16,7 +16,8 @@ const Header = () => {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
-  const moreMenuRef = useRef<HTMLDivElement>(null);
+  // Fix: Change the ref type to match the HTML element it will be attached to (li)
+  const moreMenuRef = useRef<HTMLLIElement>(null);
   const profileMenuRef = useRef<HTMLDivElement>(null);
 
   // Handle clicks outside of dropdown menus
