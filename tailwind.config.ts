@@ -13,7 +13,7 @@ export default {
 	theme: {
 		container: {
 			center: true,
-			padding: '2rem',
+			padding: '1rem',
 			screens: {
 				'sm': '640px',
 				'md': '768px',
@@ -58,8 +58,8 @@ export default {
 					foreground: 'hsl(var(--card-foreground))'
 				},
 				umi: {
-          orange: '#F97316',
-          black: '#000000',
+          orange: '#F37021',
+          black: '#333333',
           gray: '#F3F3F3',
           darkGray: '#333333',
           white: '#FFFFFF'
@@ -99,11 +99,21 @@ export default {
 					to: {
 						height: '0'
 					}
+				},
+				'slide-in': {
+					'0%': { transform: 'translateX(-100%)' },
+					'100%': { transform: 'translateX(0)' }
+				},
+				'slide-out': {
+					'0%': { transform: 'translateX(0)' },
+					'100%': { transform: 'translateX(-100%)' }
 				}
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
-				'accordion-up': 'accordion-up 0.2s ease-out'
+				'accordion-up': 'accordion-up 0.2s ease-out',
+				'slide-in': 'slide-in 0.3s ease-out',
+				'slide-out': 'slide-out 0.3s ease-out'
 			}
 		}
 	},

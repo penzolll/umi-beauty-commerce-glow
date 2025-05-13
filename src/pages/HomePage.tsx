@@ -1,16 +1,17 @@
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import MainLayout from "@/components/layouts/MainLayout";
 import HeroBanner from "@/components/shared/HeroBanner";
 import ProductCard from "@/components/shared/ProductCard";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { ArrowRight, ArrowLeft } from "lucide-react";
 import { categories, products, testimonials } from "@/data/mockData";
 
 const HomePage = () => {
-  const [featuredProducts, setFeaturedProducts] = useState(products.filter(p => p.featured));
-  const [bestSellers, setBestSellers] = useState(products.filter(p => p.bestSeller));
+  const [featuredProducts] = useState(products.filter(p => p.featured));
+  const [bestSellers] = useState(products.filter(p => p.bestSeller));
   
   return (
     <MainLayout>
@@ -18,27 +19,33 @@ const HomePage = () => {
       <HeroBanner />
 
       {/* Categories Grid */}
-      <section className="py-12 bg-white">
+      <section className="py-16 bg-white">
         <div className="container mx-auto px-4">
-          <h2 className="text-3xl font-bold text-center mb-8">Shop by Category</h2>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 md:gap-6">
-            {categories.map((category) => (
+          <div className="flex flex-col items-center mb-10 text-center">
+            <h2 className="text-3xl font-bold mb-4 uppercase">Shop by Category</h2>
+            <div className="w-16 h-1 bg-umi-orange mb-4"></div>
+            <p className="max-w-2xl text-gray-600">Discover our curated collection of premium beauty products designed to enhance your natural beauty.</p>
+          </div>
+          
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+            {categories.slice(0, 4).map((category) => (
               <Link 
                 key={category.id} 
-                to={`/products?category=${category.slug}`}
-                className="group"
+                to={`/category/${category.slug}`}
+                className="category-card group overflow-hidden"
               >
-                <div className="bg-gray-100 p-4 rounded-lg flex flex-col items-center justify-center text-center transition-all hover:bg-umi-orange/10 group-hover:shadow-md">
-                  <div className="w-16 h-16 md:w-20 md:h-20 rounded-full overflow-hidden mb-3">
-                    <img 
-                      src={category.image} 
-                      alt={category.name} 
-                      className="w-full h-full object-cover"
-                    />
+                <div className="aspect-square relative">
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-black/10 z-10"></div>
+                  <img 
+                    src={category.image} 
+                    alt={category.name} 
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                  />
+                  <div className="absolute inset-0 flex items-end z-20 p-4">
+                    <h3 className="text-white font-bold uppercase tracking-wide">
+                      {category.name}
+                    </h3>
                   </div>
-                  <h3 className="font-medium text-umi-black group-hover:text-umi-orange transition-colors">
-                    {category.name}
-                  </h3>
                 </div>
               </Link>
             ))}
@@ -47,36 +54,61 @@ const HomePage = () => {
       </section>
 
       {/* Featured Products Carousel */}
-      <section className="py-12 bg-gray-50">
+      <section className="py-16 bg-gray-50">
         <div className="container mx-auto px-4">
-          <div className="flex justify-between items-center mb-8">
-            <h2 className="text-3xl font-bold">Featured Products</h2>
+          <div className="flex flex-col items-center mb-10 text-center">
+            <h2 className="text-3xl font-bold mb-4 uppercase">Featured Products</h2>
+            <div className="w-16 h-1 bg-umi-orange mb-4"></div>
+            <p className="max-w-2xl text-gray-600">Our selection of premium beauty products, curated for you.</p>
+          </div>
+          
+          <div className="carousel-container relative">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {featuredProducts.map((product) => (
+                <ProductCard key={product.id} product={product} />
+              ))}
+            </div>
+            
+            <div className="absolute top-1/2 -left-4 transform -translate-y-1/2 hidden md:block">
+              <Button 
+                variant="outline" 
+                size="icon" 
+                className="rounded-full h-10 w-10 bg-white border border-gray-200 shadow-md hover:bg-umi-orange hover:text-white hover:border-umi-orange"
+              >
+                <ArrowLeft className="h-5 w-5" />
+              </Button>
+            </div>
+            <div className="absolute top-1/2 -right-4 transform -translate-y-1/2 hidden md:block">
+              <Button 
+                variant="outline" 
+                size="icon" 
+                className="rounded-full h-10 w-10 bg-white border border-gray-200 shadow-md hover:bg-umi-orange hover:text-white hover:border-umi-orange"
+              >
+                <ArrowRight className="h-5 w-5" />
+              </Button>
+            </div>
+          </div>
+          
+          <div className="text-center mt-10">
             <Link to="/products">
-              <Button variant="ghost" className="text-umi-orange hover:text-orange-700 hover:bg-orange-50">
-                View All
+              <Button className="bg-umi-black hover:bg-umi-orange text-white uppercase tracking-wide rounded-none px-8 py-6">
+                View All Products
               </Button>
             </Link>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {featuredProducts.map((product) => (
-              <ProductCard key={product.id} product={product} />
-            ))}
           </div>
         </div>
       </section>
 
       {/* Best Sellers */}
-      <section className="py-12 bg-white">
+      <section className="py-16 bg-white">
         <div className="container mx-auto px-4">
-          <div className="flex justify-between items-center mb-8">
-            <h2 className="text-3xl font-bold">Best Sellers</h2>
-            <Link to="/products">
-              <Button variant="ghost" className="text-umi-orange hover:text-orange-700 hover:bg-orange-50">
-                View All
-              </Button>
-            </Link>
+          <div className="flex flex-col items-center mb-10 text-center">
+            <h2 className="text-3xl font-bold mb-4 uppercase">Best Sellers</h2>
+            <div className="w-16 h-1 bg-umi-orange mb-4"></div>
+            <p className="max-w-2xl text-gray-600">Our most loved products that customers can't get enough of.</p>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {bestSellers.map((product) => (
               <ProductCard key={product.id} product={product} />
             ))}
@@ -85,17 +117,22 @@ const HomePage = () => {
       </section>
 
       {/* Testimonials */}
-      <section className="py-12 bg-gray-50">
+      <section className="py-16 bg-gray-50">
         <div className="container mx-auto px-4">
-          <h2 className="text-3xl font-bold text-center mb-8">What Our Customers Say</h2>
+          <div className="flex flex-col items-center mb-10 text-center">
+            <h2 className="text-3xl font-bold mb-4 uppercase">What Our Customers Say</h2>
+            <div className="w-16 h-1 bg-umi-orange mb-4"></div>
+            <p className="max-w-2xl text-gray-600">Read what our valued customers have to say about their experience with our products.</p>
+          </div>
+          
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {testimonials.map((testimonial) => (
-              <Card key={testimonial.id} className="p-6 shadow-sm hover:shadow-md transition-shadow">
+              <Card key={testimonial.id} className="p-6 border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
                 <div className="flex items-center mb-4">
                   <img 
                     src={testimonial.avatar} 
                     alt={testimonial.name} 
-                    className="w-12 h-12 rounded-full mr-4"
+                    className="w-12 h-12 rounded-full object-cover mr-4"
                   />
                   <div>
                     <h4 className="font-semibold">{testimonial.name}</h4>
@@ -104,7 +141,7 @@ const HomePage = () => {
                         <svg
                           key={i}
                           className={`w-4 h-4 ${
-                            i < testimonial.rating ? "text-yellow-300" : "text-gray-300"
+                            i < testimonial.rating ? "text-yellow-400" : "text-gray-300"
                           }`}
                           fill="currentColor"
                           viewBox="0 0 20 20"
@@ -115,7 +152,7 @@ const HomePage = () => {
                     </div>
                   </div>
                 </div>
-                <p className="text-gray-600">{testimonial.text}</p>
+                <p className="text-gray-600 italic">{testimonial.text}</p>
               </Card>
             ))}
           </div>
@@ -123,21 +160,32 @@ const HomePage = () => {
       </section>
 
       {/* Call to Action */}
-      <section className="py-16 bg-umi-orange text-white">
-        <div className="container mx-auto px-4 text-center">
-          <h2 className="text-3xl font-bold mb-4">Join the UMI Beauty Community</h2>
-          <p className="text-xl mb-6 max-w-2xl mx-auto">
-            Subscribe to our newsletter for exclusive offers, beauty tips, and new product announcements.
-          </p>
-          <div className="flex flex-col sm:flex-row justify-center items-center gap-4 max-w-md mx-auto">
-            <input
-              type="email"
-              placeholder="Your email address"
-              className="px-4 py-2 rounded-full w-full sm:w-64 focus:outline-none text-umi-black"
-            />
-            <Button className="bg-umi-black hover:bg-gray-800 text-white px-6 py-2 rounded-full transition-colors w-full sm:w-auto">
-              Subscribe
-            </Button>
+      <section className="py-16 bg-umi-black text-white relative overflow-hidden">
+        <div className="absolute inset-0 bg-black/30 z-10"></div>
+        <div className="absolute inset-0">
+          <img
+            src="https://images.unsplash.com/photo-1526947425960-945c6e72858f?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1740&q=80"
+            alt="Beauty products"
+            className="w-full h-full object-cover"
+          />
+        </div>
+        
+        <div className="container mx-auto px-4 text-center relative z-20">
+          <div className="max-w-2xl mx-auto">
+            <h2 className="text-3xl font-bold mb-4 uppercase tracking-wide">Join the UMI Beauty Family</h2>
+            <p className="text-xl mb-6">
+              Subscribe to our newsletter for exclusive offers, beauty tips, and new product announcements.
+            </p>
+            <div className="flex flex-col sm:flex-row justify-center items-center gap-4">
+              <input
+                type="email"
+                placeholder="Your email address"
+                className="px-6 py-4 rounded-none w-full sm:w-64 focus:outline-none text-umi-black"
+              />
+              <Button className="bg-umi-orange hover:bg-orange-600 text-white px-8 py-6 rounded-none uppercase tracking-wide w-full sm:w-auto">
+                Subscribe
+              </Button>
+            </div>
           </div>
         </div>
       </section>
