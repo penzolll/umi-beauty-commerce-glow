@@ -1,10 +1,7 @@
-
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-
 const HeroBanner = () => {
-  return (
-    <div className="relative bg-umi-black text-white">
+  return <div className="relative bg-umi-black text-white">
       <div className="container mx-auto px-4 py-16 md:py-24 flex flex-col md:flex-row items-center">
         {/* Text content */}
         <div className="md:w-1/2 z-10">
@@ -32,11 +29,7 @@ const HeroBanner = () => {
         {/* Image */}
         <div className="md:w-1/2 mt-8 md:mt-0 relative">
           <div className="ml-auto w-full md:w-5/6">
-            <img
-              src="https://images.unsplash.com/photo-1596462502278-27bfdc403348?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=880&q=80"
-              alt="UMI Beauty Products"
-              className="rounded-lg shadow-lg object-cover w-full h-[400px] md:h-[500px]"
-            />
+            <img src="https://images.unsplash.com/photo-1596462502278-27bfdc403348?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=880&q=80" alt="UMI Beauty Products" className="rounded-lg shadow-lg object-cover w-full h-[400px] md:h-[500px]" />
             <div className="absolute -bottom-4 -left-4 bg-umi-orange p-4 rounded-lg shadow-lg hidden md:block">
               <p className="text-xl font-bold">New Collection</p>
               <p className="text-sm">Limited Edition</p>
@@ -44,8 +37,6 @@ const HeroBanner = () => {
           </div>
         </div>
       </div>
-    </div>
-  );
+    </div>;
 };
-
 export default HeroBanner;
