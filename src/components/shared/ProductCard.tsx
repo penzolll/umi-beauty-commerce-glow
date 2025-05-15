@@ -5,6 +5,7 @@ import { useCart } from "@/contexts/CartContext";
 import { ShoppingCart } from "lucide-react";
 import { toast } from "sonner";
 import { Product } from "@/data/mockData";
+import { formatRupiah } from "@/lib/format";
 
 interface ProductCardProps {
   product: Product;
@@ -95,15 +96,15 @@ const ProductCard = ({ product }: ProductCardProps) => {
           {product.discountPrice ? (
             <div className="flex items-center">
               <span className="text-base font-bold text-umi-orange">
-                ${product.discountPrice.toFixed(2)}
+                {formatRupiah(product.discountPrice)}
               </span>
               <span className="text-xs text-gray-400 line-through ml-2">
-                ${product.price.toFixed(2)}
+                {formatRupiah(product.price)}
               </span>
             </div>
           ) : (
             <span className="text-base font-bold text-gray-800">
-              ${product.price.toFixed(2)}
+              {formatRupiah(product.price)}
             </span>
           )}
         </div>
@@ -120,7 +121,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
             }`}
           >
             <ShoppingCart className="mr-1 h-3 w-3" />
-            {product.stock > 0 ? "Add to Cart" : "Out of Stock"}
+            {product.stock > 0 ? "Tambah ke Keranjang" : "Stok Habis"}
           </Button>
         </div>
       </div>

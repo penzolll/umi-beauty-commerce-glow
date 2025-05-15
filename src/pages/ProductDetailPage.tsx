@@ -9,6 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useCart } from "@/contexts/CartContext";
 import { toast } from "sonner";
 import ProductCard from "@/components/shared/ProductCard";
+import { formatRupiah } from "@/lib/format";
 
 const ProductDetailPage = () => {
   const { productId } = useParams();
@@ -98,12 +99,12 @@ const ProductDetailPage = () => {
           <div className="lg:w-1/2">
             <div className="mb-4">
               <img
-                src={activeImage || product.images[0]}
-                alt={product.name}
+                src={activeImage || product?.images[0]}
+                alt={product?.name}
                 className="w-full h-[400px] object-cover rounded-lg"
               />
             </div>
-            {product.images.length > 1 && (
+            {product?.images.length > 1 && (
               <div className="flex gap-2 overflow-x-auto pb-2">
                 {product.images.map((image, index) => (
                   <div
@@ -128,14 +129,14 @@ const ProductDetailPage = () => {
 
           {/* Product Info */}
           <div className="lg:w-1/2">
-            <h1 className="text-3xl font-bold mb-2">{product.name}</h1>
+            <h1 className="text-3xl font-bold mb-2">{product?.name}</h1>
             <div className="flex items-center mb-4">
               <div className="flex items-center">
                 {Array.from({ length: 5 }).map((_, i) => (
                   <svg
                     key={i}
                     className={`w-5 h-5 ${
-                      i < product.rating ? "text-yellow-300" : "text-gray-300"
+                      i < (product?.rating || 0) ? "text-yellow-300" : "text-gray-300"
                     }`}
                     fill="currentColor"
                     viewBox="0 0 20 20"
@@ -144,26 +145,26 @@ const ProductDetailPage = () => {
                   </svg>
                 ))}
                 <span className="text-sm text-gray-500 ml-1">
-                  ({product.reviewCount} reviews)
+                  ({product?.reviewCount} reviews)
                 </span>
               </div>
             </div>
             <div className="mb-4">
-              <p className="text-gray-600">Category: {product.category}</p>
+              <p className="text-gray-600">Category: {product?.category}</p>
             </div>
             <div className="mb-6">
-              {product.discountPrice ? (
+              {product?.discountPrice ? (
                 <div className="flex items-center">
                   <span className="text-2xl font-bold text-umi-black mr-2">
-                    ${product.discountPrice.toFixed(2)}
+                    {formatRupiah(product.discountPrice)}
                   </span>
                   <span className="text-gray-500 line-through">
-                    ${product.price.toFixed(2)}
+                    {formatRupiah(product.price)}
                   </span>
                 </div>
               ) : (
                 <span className="text-2xl font-bold text-umi-black">
-                  ${product.price.toFixed(2)}
+                  {product && formatRupiah(product.price)}
                 </span>
               )}
             </div>

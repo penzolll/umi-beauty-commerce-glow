@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import MainLayout from "@/components/layouts/MainLayout";
@@ -67,7 +66,7 @@ const HomePage = () => {
           <div className="flex flex-col items-center mb-8 text-center">
             <h2 className="text-3xl font-bold mb-4 uppercase tracking-wide">Bundling Lebih Hemat</h2>
             <div className="w-16 h-1 bg-umi-orange mb-4"></div>
-            <p className="max-w-2xl text-gray-600">Save more with our specially curated product bundles.</p>
+            <p className="max-w-2xl text-gray-600">Hemat lebih banyak dengan produk bundling pilihan kami.</p>
           </div>
           
           <Carousel
@@ -101,7 +100,7 @@ const HomePage = () => {
           <div className="text-center mt-8">
             <Link to="/products">
               <Button className="bg-umi-black hover:bg-umi-orange text-white uppercase tracking-wide px-8 py-6">
-                View All Products
+                Lihat Semua Produk
               </Button>
             </Link>
           </div>
@@ -114,7 +113,7 @@ const HomePage = () => {
           <div className="flex flex-col items-center mb-8 text-center">
             <h2 className="text-3xl font-bold mb-4 uppercase tracking-wide">Rekomendasi Produk Untukmu</h2>
             <div className="w-16 h-1 bg-umi-orange mb-4"></div>
-            <p className="max-w-2xl text-gray-600">Our most loved products that customers can't get enough of.</p>
+            <p className="max-w-2xl text-gray-600">Produk terlaris yang paling disukai pelanggan kami.</p>
           </div>
           
           <Carousel
