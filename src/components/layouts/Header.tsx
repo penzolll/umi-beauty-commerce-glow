@@ -9,8 +9,7 @@ import {
   Menu, 
   X, 
   ChevronDown, 
-  User,
-  Facebook 
+  User 
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCart } from "@/contexts/CartContext";
@@ -21,7 +20,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 
 const Header = () => {
-  const { isAuthenticated, user, login, register, logout } = useAuth();
+  const { isAuthenticated, user, login, register, logout, googleLogin, appleLogin } = useAuth();
   const { totalItems } = useCart();
   const navigate = useNavigate();
   
@@ -114,8 +113,8 @@ const Header = () => {
       setLoginEmail("");
       setLoginPassword("");
       setIsProfileOpen(false);
-    } catch (err) {
-      setLoginError("Invalid email or password");
+    } catch (err: any) {
+      setLoginError(err.message || "Invalid email or password");
       console.error(err);
     } finally {
       setIsLoggingIn(false);
@@ -147,14 +146,8 @@ const Header = () => {
     setIsRegistering(true);
 
     try {
-      // Check for duplicate email (mock implementation)
-      if (registerEmail === "admin@umibeauty.com") {
-        throw new Error("Email already registered");
-      }
-      
-      // Register the user
       await register(registerEmail, registerPassword, registerName);
-      toast.success("Registration successful! A verification email has been sent.");
+      toast.success("Registration successful! Please check your email for verification.");
       
       // Clear form
       setRegisterName("");
@@ -178,14 +171,22 @@ const Header = () => {
     setIsProfileOpen(false);
   };
 
-  const handleGoogleLogin = () => {
-    // In a real app, this would initiate Google OAuth
-    toast.info("Google OAuth would be implemented here");
+  const handleGoogleLogin = async () => {
+    try {
+      await googleLogin();
+      // The redirect will happen automatically
+    } catch (err) {
+      toast.error("Google login failed");
+    }
   };
 
-  const handleFacebookLogin = () => {
-    // In a real app, this would initiate Facebook OAuth
-    toast.info("Facebook OAuth would be implemented here");
+  const handleAppleLogin = async () => {
+    try {
+      await appleLogin();
+      // The redirect will happen automatically
+    } catch (err) {
+      toast.error("Apple login failed");
+    }
   };
 
   // Split categories for main nav and More dropdown
@@ -465,10 +466,13 @@ const Header = () => {
                             type="button"
                             variant="outline"
                             className="w-full"
-                            onClick={handleFacebookLogin}
+                            onClick={handleAppleLogin}
                           >
-                            <Facebook className="h-4 w-4 mr-2 text-blue-600" />
-                            Facebook
+                            <svg className="h-4 w-4 mr-2" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                              <path d="M14.94,5.19A4.38,4.38,0,0,0,16,2,4.44,4.44,0,0,0,13,3.52,4.17,4.17,0,0,0,12,6.61,3.69,3.69,0,0,0,14.94,5.19Z" />
+                              <path d="M19.14,17.5c.87-1.2,1.31-2.43,1.36-3.66a4.56,4.56,0,0,0-2.75-4.2,5.2,5.2,0,0,0-2.43-.6,5.48,5.48,0,0,0-2,.51A4.51,4.51,0,0,1,12,10a4.51,4.51,0,0,1-1.32-.46,5.54,5.54,0,0,0-2-.51,5.22,5.22,0,0,0-2.43.6A4.56,4.56,0,0,0,3.5,13.84c0,1.23.44,2.46,1.36,3.66a12.81,12.81,0,0,0,1.56,1.68A8.19,8.19,0,0,0,7.87,20.1a1.94,1.94,0,0,0,.91.21,2.19,2.19,0,0,0,.95-.21A9.54,9.54,0,0,0,12,18.51a9.54,9.54,0,0,0,2.27,1.59,2.22,2.22,0,0,0,.95.21,2,2,0,0,0,.91-.21,8.19,8.19,0,0,0,1.45-.92A12.79,12.79,0,0,0,19.14,17.5Z" />
+                            </svg>
+                            Apple
                           </Button>
                         </div>
                       </div>
@@ -592,10 +596,13 @@ const Header = () => {
                             type="button"
                             variant="outline"
                             className="w-full"
-                            onClick={handleFacebookLogin}
+                            onClick={handleAppleLogin}
                           >
-                            <Facebook className="h-4 w-4 mr-2 text-blue-600" />
-                            Facebook
+                            <svg className="h-4 w-4 mr-2" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                              <path d="M14.94,5.19A4.38,4.38,0,0,0,16,2,4.44,4.44,0,0,0,13,3.52,4.17,4.17,0,0,0,12,6.61,3.69,3.69,0,0,0,14.94,5.19Z" />
+                              <path d="M19.14,17.5c.87-1.2,1.31-2.43,1.36-3.66a4.56,4.56,0,0,0-2.75-4.2,5.2,5.2,0,0,0-2.43-.6,5.48,5.48,0,0,0-2,.51A4.51,4.51,0,0,1,12,10a4.51,4.51,0,0,1-1.32-.46,5.54,5.54,0,0,0-2-.51,5.22,5.22,0,0,0-2.43.6A4.56,4.56,0,0,0,3.5,13.84c0,1.23.44,2.46,1.36,3.66a12.81,12.81,0,0,0,1.56,1.68A8.19,8.19,0,0,0,7.87,20.1a1.94,1.94,0,0,0,.91.21,2.19,2.19,0,0,0,.95-.21A9.54,9.54,0,0,0,12,18.51a9.54,9.54,0,0,0,2.27,1.59,2.22,2.22,0,0,0,.95.21,2,2,0,0,0,.91-.21,8.19,8.19,0,0,0,1.45-.92A12.79,12.79,0,0,0,19.14,17.5Z" />
+                            </svg>
+                            Apple
                           </Button>
                         </div>
                       </div>

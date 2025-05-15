@@ -1,8 +1,10 @@
 
 import { createContext, useState, useContext, ReactNode, useEffect } from "react";
 import { toast } from "sonner";
+import { supabase } from "@/lib/supabase";
+import { User, Session } from "@supabase/supabase-js";
 
-interface User {
+interface AuthUser {
   id: string;
   email: string;
   name: string;
@@ -10,11 +12,13 @@ interface User {
 }
 
 interface AuthContextType {
-  user: User | null;
+  user: AuthUser | null;
   login: (email: string, password: string, rememberMe?: boolean) => Promise<void>;
   register: (email: string, password: string, name: string) => Promise<void>;
   logout: () => void;
   isAuthenticated: boolean;
+  googleLogin: () => Promise<void>;
+  appleLogin: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -28,97 +32,118 @@ export const useAuth = () => {
 };
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [user, setUser] = useState<User | null>(() => {
-    // Check session storage first (for non-persistent sessions)
-    const sessionUser = sessionStorage.getItem("user");
-    if (sessionUser) {
-      return JSON.parse(sessionUser);
-    }
-    
-    // Then check local storage (for persistent sessions)
-    const localUser = localStorage.getItem("user");
-    return localUser ? JSON.parse(localUser) : null;
-  });
+  const [user, setUser] = useState<AuthUser | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
 
-  // Function to check if the token has expired
   useEffect(() => {
-    const checkSession = () => {
-      const expiryTime = localStorage.getItem("sessionExpiry") || sessionStorage.getItem("sessionExpiry");
-      if (expiryTime && parseInt(expiryTime) < Date.now()) {
-        // Session expired, log the user out
-        logout();
-        toast.error("Your session has expired. Please login again.");
+    // Set up auth state listener FIRST
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        setSession(session);
+        if (session?.user) {
+          const { id, email, user_metadata } = session.user;
+          setUser({
+            id,
+            email: email || "",
+            name: user_metadata?.name || email?.split('@')[0] || "User",
+            isAdmin: email === "admin@umibeauty.com"
+          });
+        } else {
+          setUser(null);
+        }
       }
+    );
+
+    // THEN check for existing session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      if (session?.user) {
+        const { id, email, user_metadata } = session.user;
+        setUser({
+          id,
+          email: email || "",
+          name: user_metadata?.name || email?.split('@')[0] || "User",
+          isAdmin: email === "admin@umibeauty.com"
+        });
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
     };
-    
-    // Check on load and then every 5 minutes
-    checkSession();
-    const interval = setInterval(checkSession, 5 * 60 * 1000);
-    
-    return () => clearInterval(interval);
   }, []);
 
   const login = async (email: string, password: string, rememberMe = false) => {
-    // This is a mock authentication. In a real app, you would call your authentication API
-    if (email === "admin@umibeauty.com" && password === "password") {
-      const user = { id: "1", email, name: "Admin User", isAdmin: true };
-      setUser(user);
+    try {
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
       
-      // Set session expiry (24 hours for remember me, 1 hour for regular session)
-      const expiryTime = Date.now() + (rememberMe ? 24 : 1) * 60 * 60 * 1000;
-      
-      if (rememberMe) {
-        localStorage.setItem("user", JSON.stringify(user));
-        localStorage.setItem("sessionExpiry", expiryTime.toString());
-      } else {
-        sessionStorage.setItem("user", JSON.stringify(user));
-        sessionStorage.setItem("sessionExpiry", expiryTime.toString());
-      }
-      return;
-    } else if (email && password) { // Allow any non-empty credentials for demo
-      const user = { id: "2", email, name: "Customer User", isAdmin: false };
-      setUser(user);
-      
-      // Set session expiry (24 hours for remember me, 1 hour for regular session)
-      const expiryTime = Date.now() + (rememberMe ? 24 : 1) * 60 * 60 * 1000;
-      
-      if (rememberMe) {
-        localStorage.setItem("user", JSON.stringify(user));
-        localStorage.setItem("sessionExpiry", expiryTime.toString());
-      } else {
-        sessionStorage.setItem("user", JSON.stringify(user));
-        sessionStorage.setItem("sessionExpiry", expiryTime.toString());
-      }
-      return;
+      if (error) throw error;
+    } catch (error: any) {
+      console.error("Error logging in:", error.message);
+      throw new Error(error.message || "Error logging in");
     }
-    
-    throw new Error("Invalid credentials");
   };
 
   const register = async (email: string, password: string, name: string) => {
-    // This is a mock registration. In a real app, you would call your registration API
-    if (email && password && name) {
-      // Check for existing emails (mock implementation)
-      if (email === "admin@umibeauty.com") {
-        throw new Error("Email already registered");
-      }
+    try {
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: { name }
+        }
+      });
       
-      const user = { id: Date.now().toString(), email, name, isAdmin: false };
-      setUser(user);
-      sessionStorage.setItem("user", JSON.stringify(user));
-      sessionStorage.setItem("sessionExpiry", (Date.now() + 60 * 60 * 1000).toString()); // 1 hour
-      return;
+      if (error) throw error;
+    } catch (error: any) {
+      console.error("Error registering:", error.message);
+      throw new Error(error.message || "Error registering");
     }
-    
-    throw new Error("Invalid registration details");
   };
 
-  const logout = () => {
-    setUser(null);
-    localStorage.removeItem("user");
-    localStorage.removeItem("sessionExpiry");
-    sessionStorage.removeItem("user");
-    sessionStorage.removeItem("sessionExpiry");
+  const googleLogin = async () => {
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: window.location.origin,
+        }
+      });
+      
+      if (error) throw error;
+    } catch (error: any) {
+      console.error("Error with Google login:", error.message);
+      throw new Error(error.message || "Error with Google login");
+    }
+  };
+
+  const appleLogin = async () => {
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'apple',
+        options: {
+          redirectTo: window.location.origin,
+        }
+      });
+      
+      if (error) throw error;
+    } catch (error: any) {
+      console.error("Error with Apple login:", error.message);
+      throw new Error(error.message || "Error with Apple login");
+    }
+  };
+
+  const logout = async () => {
+    try {
+      await supabase.auth.signOut();
+      setUser(null);
+    } catch (error: any) {
+      console.error("Error logging out:", error.message);
+      toast.error("Error logging out");
+    }
   };
 
   return (
@@ -128,7 +153,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         login,
         register,
         logout,
-        isAuthenticated: !!user
+        isAuthenticated: !!user,
+        googleLogin,
+        appleLogin
       }}
     >
       {children}
