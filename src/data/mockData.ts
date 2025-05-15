@@ -1,4 +1,3 @@
-
 export interface Product {
   id: string;
   name: string;
@@ -14,6 +13,8 @@ export interface Product {
   featured?: boolean;
   new?: boolean;
   bestSeller?: boolean;
+  localProduct?: boolean;
+  preOrder?: boolean;
 }
 
 export interface Category {
