@@ -1,3 +1,4 @@
+
 import { useTheme } from "next-themes"
 import { Toaster as Sonner, toast } from "sonner"
 
@@ -10,6 +11,8 @@ const Toaster = ({ ...props }: ToasterProps) => {
     <Sonner
       theme={theme as ToasterProps["theme"]}
       className="toaster group"
+      richColors
+      closeButton
       toastOptions={{
         classNames: {
           toast:
@@ -26,4 +29,13 @@ const Toaster = ({ ...props }: ToasterProps) => {
   )
 }
 
-export { Toaster, toast }
+// Kustomisasi toast dalam Bahasa Indonesia
+const customToast = {
+  ...toast,
+  sukses: (message: string, options?: any) => toast.success(message, options),
+  error: (message: string, options?: any) => toast.error(message, options),
+  peringatan: (message: string, options?: any) => toast.warning(message, options),
+  informasi: (message: string, options?: any) => toast.info(message, options),
+}
+
+export { Toaster, customToast as toast }

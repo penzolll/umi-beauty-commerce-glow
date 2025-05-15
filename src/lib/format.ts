@@ -1,0 +1,36 @@
+
+/**
+ * Format utilitas untuk konversi ke format Indonesia
+ */
+
+// Format mata uang ke Rupiah
+export function formatRupiah(amount: number): string {
+  return new Intl.NumberFormat('id-ID', {
+    style: 'currency',
+    currency: 'IDR',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0
+  }).format(amount);
+}
+
+// Format tanggal ke format Indonesia
+export function formatTanggalIndonesia(date: Date | string): string {
+  const tanggal = typeof date === 'string' ? new Date(date) : date;
+  
+  return new Intl.DateTimeFormat('id-ID', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  }).format(tanggal);
+}
+
+// Daftar nama bulan dalam Bahasa Indonesia
+export const namaBulan = [
+  'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 
+  'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
+];
+
+// Daftar nama hari dalam Bahasa Indonesia
+export const namaHari = [
+  'Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'
+];
