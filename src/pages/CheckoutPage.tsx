@@ -6,7 +6,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useCart } from "@/contexts/CartContext";
 import { useAuth } from "@/contexts/AuthContext";
-import { toast } from "sonner";
+import { toast } from "@/components/ui/use-toast";
+import { PaymentMethodsIndonesia } from "@/components/checkout/PaymentMethodsIndonesia";
+import { formatRupiah } from "@/lib/format";
 
 const CheckoutPage = () => {
   const { items, totalPrice, discountAmount, clearCart } = useCart();
@@ -14,7 +16,7 @@ const CheckoutPage = () => {
   const navigate = useNavigate();
 
   const subtotal = totalPrice + discountAmount;
-  const shipping = 10;
+  const shipping = 10000;  // Changed to IDR
   const total = totalPrice + shipping;
 
   const [formData, setFormData] = useState({
@@ -24,15 +26,10 @@ const CheckoutPage = () => {
     phone: "",
     address: "",
     city: "",
-    state: "",
+    province: "",
     zipCode: "",
     country: "Indonesia",
-    paymentMethod: "credit-card",
-    cardNumber: "",
-    cardHolder: "",
-    expMonth: "",
-    expYear: "",
-    cvv: "",
+    paymentMethod: "bca",
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -43,27 +40,33 @@ const CheckoutPage = () => {
     });
   };
 
+  const handlePaymentMethodSelect = (method: string) => {
+    setFormData({
+      ...formData,
+      paymentMethod: method,
+    });
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
     // Validate form
     if (!formData.firstName || !formData.lastName || !formData.email || 
         !formData.phone || !formData.address || !formData.city || 
-        !formData.state || !formData.zipCode) {
-      toast.error("Please fill in all required fields");
+        !formData.province || !formData.zipCode) {
+      toast({
+        title: "Error",
+        description: "Mohon lengkapi semua kolom yang diperlukan",
+        variant: "destructive"
+      });
       return;
-    }
-    
-    if (formData.paymentMethod === "credit-card") {
-      if (!formData.cardNumber || !formData.cardHolder || 
-          !formData.expMonth || !formData.expYear || !formData.cvv) {
-        toast.error("Please fill in all payment details");
-        return;
-      }
     }
 
     // This is where you'd normally send the order to your backend
-    toast.success("Order placed successfully!");
+    toast({
+      title: "Pesanan Berhasil",
+      description: "Pesanan Anda telah berhasil dibuat dan sedang diproses."
+    });
     clearCart();
     
     // Redirect to a success page
@@ -90,12 +93,12 @@ const CheckoutPage = () => {
               {/* Shipping Information */}
               <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
                 <h2 className="text-xl font-semibold mb-4">
-                  Shipping Information
+                  Informasi Pengiriman
                 </h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium mb-1">
-                      First Name *
+                      Nama Depan *
                     </label>
                     <Input
                       type="text"
@@ -107,7 +110,7 @@ const CheckoutPage = () => {
                   </div>
                   <div>
                     <label className="block text-sm font-medium mb-1">
-                      Last Name *
+                      Nama Belakang *
                     </label>
                     <Input
                       type="text"
@@ -119,7 +122,7 @@ const CheckoutPage = () => {
                   </div>
                   <div>
                     <label className="block text-sm font-medium mb-1">
-                      Email Address *
+                      Email *
                     </label>
                     <Input
                       type="email"
@@ -131,7 +134,7 @@ const CheckoutPage = () => {
                   </div>
                   <div>
                     <label className="block text-sm font-medium mb-1">
-                      Phone Number *
+                      Nomor Telepon *
                     </label>
                     <Input
                       type="tel"
@@ -139,11 +142,12 @@ const CheckoutPage = () => {
                       value={formData.phone}
                       onChange={handleChange}
                       required
+                      placeholder="contoh: 0812xxxx"
                     />
                   </div>
                   <div className="md:col-span-2">
                     <label className="block text-sm font-medium mb-1">
-                      Address *
+                      Alamat Lengkap *
                     </label>
                     <Input
                       type="text"
@@ -151,11 +155,12 @@ const CheckoutPage = () => {
                       value={formData.address}
                       onChange={handleChange}
                       required
+                      placeholder="Nama jalan, nomor rumah, RT/RW"
                     />
                   </div>
                   <div>
                     <label className="block text-sm font-medium mb-1">
-                      City *
+                      Kota *
                     </label>
                     <Input
                       type="text"
@@ -167,19 +172,19 @@ const CheckoutPage = () => {
                   </div>
                   <div>
                     <label className="block text-sm font-medium mb-1">
-                      State/Province *
+                      Provinsi *
                     </label>
                     <Input
                       type="text"
-                      name="state"
-                      value={formData.state}
+                      name="province"
+                      value={formData.province}
                       onChange={handleChange}
                       required
                     />
                   </div>
                   <div>
                     <label className="block text-sm font-medium mb-1">
-                      ZIP/Postal Code *
+                      Kode Pos *
                     </label>
                     <Input
                       type="text"
@@ -191,7 +196,7 @@ const CheckoutPage = () => {
                   </div>
                   <div>
                     <label className="block text-sm font-medium mb-1">
-                      Country *
+                      Negara *
                     </label>
                     <select
                       name="country"
@@ -201,144 +206,18 @@ const CheckoutPage = () => {
                       required
                     >
                       <option value="Indonesia">Indonesia</option>
-                      <option value="USA">United States</option>
-                      <option value="Singapore">Singapore</option>
                       <option value="Malaysia">Malaysia</option>
+                      <option value="Singapura">Singapura</option>
                     </select>
                   </div>
                 </div>
               </div>
 
-              {/* Payment Method */}
-              <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
-                <h2 className="text-xl font-semibold mb-4">Payment Method</h2>
-                <div className="space-y-4">
-                  {/* Payment Options */}
-                  <div className="space-y-2">
-                    <div className="flex items-center">
-                      <input
-                        type="radio"
-                        id="credit-card"
-                        name="paymentMethod"
-                        value="credit-card"
-                        checked={formData.paymentMethod === "credit-card"}
-                        onChange={handleChange}
-                        className="mr-2"
-                      />
-                      <label htmlFor="credit-card" className="flex items-center">
-                        Credit/Debit Card
-                        <div className="flex ml-2 space-x-1">
-                          <span className="text-gray-400">
-                            <svg className="h-6 w-8" viewBox="0 0 36 24" fill="currentColor">
-                              <rect width="36" height="24" rx="2" />
-                            </svg>
-                          </span>
-                        </div>
-                      </label>
-                    </div>
-
-                    <div className="flex items-center">
-                      <input
-                        type="radio"
-                        id="midtrans"
-                        name="paymentMethod"
-                        value="midtrans"
-                        checked={formData.paymentMethod === "midtrans"}
-                        onChange={handleChange}
-                        className="mr-2"
-                      />
-                      <label htmlFor="midtrans" className="flex items-center">
-                        Midtrans Payment (Bank Transfer, E-Wallet)
-                      </label>
-                    </div>
-                  </div>
-
-                  {/* Credit Card Form */}
-                  {formData.paymentMethod === "credit-card" && (
-                    <div className="border-t pt-4 mt-4">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="md:col-span-2">
-                          <label className="block text-sm font-medium mb-1">
-                            Card Number *
-                          </label>
-                          <Input
-                            type="text"
-                            name="cardNumber"
-                            placeholder="XXXX XXXX XXXX XXXX"
-                            value={formData.cardNumber}
-                            onChange={handleChange}
-                          />
-                        </div>
-                        <div className="md:col-span-2">
-                          <label className="block text-sm font-medium mb-1">
-                            Cardholder Name *
-                          </label>
-                          <Input
-                            type="text"
-                            name="cardHolder"
-                            placeholder="Name as it appears on the card"
-                            value={formData.cardHolder}
-                            onChange={handleChange}
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium mb-1">
-                            Expiration Date *
-                          </label>
-                          <div className="grid grid-cols-2 gap-2">
-                            <Input
-                              type="text"
-                              name="expMonth"
-                              placeholder="MM"
-                              value={formData.expMonth}
-                              onChange={handleChange}
-                            />
-                            <Input
-                              type="text"
-                              name="expYear"
-                              placeholder="YY"
-                              value={formData.expYear}
-                              onChange={handleChange}
-                            />
-                          </div>
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium mb-1">
-                            CVV *
-                          </label>
-                          <Input
-                            type="text"
-                            name="cvv"
-                            placeholder="XXX"
-                            value={formData.cvv}
-                            onChange={handleChange}
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Midtrans Instructions */}
-                  {formData.paymentMethod === "midtrans" && (
-                    <div className="border-t pt-4 mt-4">
-                      <div className="bg-blue-50 p-4 rounded">
-                        <h3 className="font-medium text-blue-800 mb-2">Midtrans Payment Information</h3>
-                        <p className="text-sm text-blue-700 mb-2">
-                          After placing your order, you will be redirected to Midtrans to complete your payment.
-                        </p>
-                        <p className="text-sm text-blue-700">
-                          Available payment methods include:
-                        </p>
-                        <ul className="list-disc list-inside text-sm text-blue-700 ml-2 mt-1">
-                          <li>Bank Transfer (BCA, Mandiri, BNI, BRI)</li>
-                          <li>E-Wallets (GoPay, OVO, DANA, LinkAja)</li>
-                          <li>Convenience Stores (Indomaret, Alfamart)</li>
-                        </ul>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
+              {/* Payment Method - Using our new Indonesian payment component */}
+              <PaymentMethodsIndonesia 
+                total={total} 
+                onMethodSelect={handlePaymentMethodSelect}
+              />
 
               {/* Place Order Button */}
               <div className="mt-6">
@@ -346,7 +225,7 @@ const CheckoutPage = () => {
                   type="submit"
                   className="w-full bg-umi-orange hover:bg-orange-700 py-3 text-lg"
                 >
-                  Place Order
+                  Buat Pesanan
                 </Button>
               </div>
             </form>
@@ -355,7 +234,7 @@ const CheckoutPage = () => {
           {/* Order Summary */}
           <div className="lg:w-1/3">
             <div className="bg-white rounded-lg shadow-sm p-6 sticky top-20">
-              <h2 className="text-xl font-semibold mb-4">Order Summary</h2>
+              <h2 className="text-xl font-semibold mb-4">Ringkasan Pesanan</h2>
 
               {/* Items */}
               <div className="space-y-3 mb-4">
@@ -366,7 +245,7 @@ const CheckoutPage = () => {
                         {item.quantity} x {item.name}
                       </span>
                     </div>
-                    <span>${(item.price * item.quantity).toFixed(2)}</span>
+                    <span>{formatRupiah(item.price * item.quantity)}</span>
                   </div>
                 ))}
               </div>
@@ -376,17 +255,17 @@ const CheckoutPage = () => {
                 <div className="space-y-2">
                   <div className="flex justify-between">
                     <span className="text-gray-600">Subtotal</span>
-                    <span>${subtotal.toFixed(2)}</span>
+                    <span>{formatRupiah(subtotal)}</span>
                   </div>
                   {discountAmount > 0 && (
                     <div className="flex justify-between text-green-600">
-                      <span>Discount</span>
-                      <span>-${discountAmount.toFixed(2)}</span>
+                      <span>Diskon</span>
+                      <span>-{formatRupiah(discountAmount)}</span>
                     </div>
                   )}
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Shipping</span>
-                    <span>${shipping.toFixed(2)}</span>
+                    <span className="text-gray-600">Ongkos Kirim</span>
+                    <span>{formatRupiah(shipping)}</span>
                   </div>
                 </div>
               </div>
@@ -395,7 +274,7 @@ const CheckoutPage = () => {
               <div className="border-t pt-4">
                 <div className="flex justify-between items-center">
                   <span className="text-lg font-bold">Total</span>
-                  <span className="text-lg font-bold">${total.toFixed(2)}</span>
+                  <span className="text-lg font-bold">{formatRupiah(total)}</span>
                 </div>
               </div>
             </div>

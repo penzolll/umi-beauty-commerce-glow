@@ -25,11 +25,16 @@ import NotFound from "./pages/NotFound";
 import ProfilePage from "./pages/ProfilePage";
 import OrdersPage from "./pages/OrdersPage";
 import CategoryPage from "./pages/CategoryPage";
+import PromoPage from "./pages/PromoPage";
 
 // Context Providers
 import { CartProvider } from "./contexts/CartContext";
 import { AuthProvider } from "./contexts/AuthContext";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
+import { enhanceProductData } from "./data/enhancedMockData";
+
+// Initialize the enhanced product data
+enhanceProductData();
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -63,6 +68,7 @@ const App = () => (
               <Route path="/privacy" element={<PrivacyPage />} />
               <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
               <Route path="/orders" element={<ProtectedRoute><OrdersPage /></ProtectedRoute>} />
+              <Route path="/promo/:slug" element={<PromoPage />} />
               <Route path="/admin" element={<ProtectedRoute admin={true}><AdminDashboardPage /></ProtectedRoute>} />
               <Route path="/admin/products" element={<ProtectedRoute admin={true}><AdminProductsPage /></ProtectedRoute>} />
               <Route path="/admin/categories" element={<ProtectedRoute admin={true}><AdminCategoriesPage /></ProtectedRoute>} />
